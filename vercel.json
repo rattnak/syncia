@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/hearts/reset",
+      "schedule": "0 0 * * *"
+    }
+  ]
+}
