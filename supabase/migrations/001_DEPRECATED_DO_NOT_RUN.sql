@@ -1,3 +1,7 @@
+-- DEPRECATED — DO NOT RUN
+-- This migration references azure_id and the old NextAuth/Azure AD auth strategy.
+-- Auth was replaced with Supabase magic link. Use 20260514000000_phase1_schema.sql instead.
+
 -- Users (synced from Azure AD via NextAuth)
 create table if not exists users (
   id uuid primary key default gen_random_uuid(),

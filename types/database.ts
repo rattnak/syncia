@@ -1,34 +1,42 @@
 export type UserRole = 'member' | 'supervisor' | 'admin'
 export type MemberRole = 'leader' | 'member'
-export type MemberStatus = 'pending' | 'active' | 'declined'
+export type MemberStatus = 'pending' | 'active' | 'declined' | 'left' | 'removed'
 export type ProgressStatus = 'not_started' | 'in_progress' | 'done'
 
 export interface Database {
   public: {
     Tables: {
-      users: {
+      profiles: {
         Row: {
-          id: string
-          azure_id: string
+          id: string           // references auth.users.id
           email: string
-          name: string | null
+          full_name: string | null
           role: UserRole
           created_at: string
         }
-        Insert: Omit<Database['public']['Tables']['users']['Row'], 'id' | 'created_at'>
-        Update: Partial<Database['public']['Tables']['users']['Insert']>
+        Insert: Omit<Database['public']['Tables']['profiles']['Row'], 'created_at'>
+        Update: Partial<Database['public']['Tables']['profiles']['Insert']>
+        Relationships: []
       }
       projects: {
         Row: {
           id: string
           name: string
           description: string | null
-          teams_channel_id: string | null
           created_by: string | null
           created_at: string
+          teams_channel_id: string | null
+          teams_channel_url: string | null
         }
-        Insert: Omit<Database['public']['Tables']['projects']['Row'], 'id' | 'created_at'>
+        Insert: {
+          name: string
+          description?: string | null
+          created_by?: string | null
+          teams_channel_id?: string | null
+          teams_channel_url?: string | null
+        }
         Update: Partial<Database['public']['Tables']['projects']['Insert']>
+        Relationships: []
       }
       project_members: {
         Row: {
@@ -43,6 +51,22 @@ export interface Database {
         }
         Insert: Omit<Database['public']['Tables']['project_members']['Row'], 'id'>
         Update: Partial<Database['public']['Tables']['project_members']['Insert']>
+        Relationships: []
+      }
+      invites: {
+        Row: {
+          id: string
+          project_id: string
+          invited_email: string
+          invited_by: string
+          token: string
+          status: 'pending' | 'accepted' | 'declined'
+          created_at: string
+          expires_at: string
+        }
+        Insert: Omit<Database['public']['Tables']['invites']['Row'], 'id' | 'created_at'>
+        Update: Partial<Database['public']['Tables']['invites']['Insert']>
+        Relationships: []
       }
       availability: {
         Row: {
@@ -54,6 +78,7 @@ export interface Database {
         }
         Insert: Omit<Database['public']['Tables']['availability']['Row'], 'id'>
         Update: Partial<Database['public']['Tables']['availability']['Insert']>
+        Relationships: []
       }
       progress_logs: {
         Row: {
@@ -67,7 +92,8 @@ export interface Database {
           updated_at: string
         }
         Insert: Omit<Database['public']['Tables']['progress_logs']['Row'], 'id' | 'created_at' | 'updated_at'>
-        Update: Partial<Database['public']['Tables']['progress_logs']['Insert']>
+        Update: Partial<Database['public']['Tables']['progress_logs']['Insert']> & { updated_at?: string }
+        Relationships: []
       }
       hearts: {
         Row: {
@@ -79,6 +105,7 @@ export interface Database {
         }
         Insert: Omit<Database['public']['Tables']['hearts']['Row'], 'id'>
         Update: Partial<Database['public']['Tables']['hearts']['Insert']>
+        Relationships: []
       }
       ai_audit_log: {
         Row: {
@@ -91,7 +118,11 @@ export interface Database {
         }
         Insert: Omit<Database['public']['Tables']['ai_audit_log']['Row'], 'id' | 'created_at'>
         Update: never
+        Relationships: []
       }
     }
+    Views: Record<string, never>
+    Functions: Record<string, never>
+    Enums: Record<string, never>
   }
 }
