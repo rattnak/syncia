@@ -9,11 +9,11 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const supabase = createClient()
+  const supabase = await createClient()
   const { error } = await supabase
     .from('hearts')
-    .update({ remaining: supabase.rpc('daily_limit_value') as unknown as number, last_reset: new Date().toISOString() })
-    .lt('last_reset', new Date(Date.now() - 20 * 60 * 60 * 1000).toISOString()) // reset if last reset > 20h ago
+    .update({ remaining: 10, last_reset: new Date().toISOString() })
+    .lt('last_reset', new Date(Date.now() - 20 * 60 * 60 * 1000).toISOString())
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json({ success: true })
