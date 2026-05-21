@@ -1,23 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
 import { createClient } from '@/lib/supabase/server'
 
-// Activate focus mode: set focused projects, clear others
+// Activate focus mode: set focused projects, mark others unavailable
 export async function POST(req: NextRequest) {
-  const session = await getServerSession()
-  if (!session?.user?.email) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { focusedProjectIds }: { focusedProjectIds: string[] } = await req.json()
 
-  const supabase = createClient()
-  const { data: user } = await supabase
-    .from('users')
-    .select('id')
-    .eq('email', session.user.email)
-    .single()
-  if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 })
-
-  // Get all projects the user is a member of
   const { data: memberships } = await supabase
     .from('project_members')
     .select('project_id')
@@ -26,7 +17,6 @@ export async function POST(req: NextRequest) {
 
   if (!memberships) return NextResponse.json({ success: true })
 
-  // Upsert availability for each project
   const upserts = memberships.map((m) => ({
     user_id: user.id,
     project_id: m.project_id,
@@ -40,16 +30,16 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET(req: NextRequest) {
-  const session = await getServerSession()
-  if (!session?.user?.email) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const projectId = req.nextUrl.searchParams.get('projectId')
   if (!projectId) return NextResponse.json({ error: 'Missing projectId' }, { status: 400 })
 
-  const supabase = createClient()
   const { data } = await supabase
     .from('availability')
-    .select('user_id, is_focused, updated_at, users(name, email)')
+    .select('user_id, is_focused, updated_at, profiles(full_name, email)')
     .eq('project_id', projectId)
 
   return NextResponse.json({ availability: data ?? [] })
