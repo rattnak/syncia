@@ -34,7 +34,7 @@ export async function runAgentQuery({ requesterId, subjectUserId, projectId, que
   })
 
   // Write audit log
-  const supabase = createClient()
+  const supabase = await createClient()
   await supabase.from('ai_audit_log').insert({
     requester_id: requesterId,
     subject_user_id: subjectUserId ?? null,

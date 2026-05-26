@@ -1,54 +1,52 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
 import { createClient } from '@/lib/supabase/server'
 import { runAgentQuery } from '@/lib/ai/agent'
 
 export async function POST(req: NextRequest) {
-  const session = await getServerSession()
-  if (!session?.user?.email) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  // Demo mode: return a canned answer so the UI can be previewed
+  if (process.env.DEMO_MODE === 'true') {
+    const { query } = await req.json()
+    return NextResponse.json({
+      answer: `[Demo] This is a simulated AI response to: "${query}". In production this would be answered by Claude Haiku using live progress log data.`,
+    })
+  }
+
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { query, projectId, subjectUserId } = await req.json()
   if (!query) return NextResponse.json({ error: 'Missing query' }, { status: 400 })
 
-  const supabase = createClient()
-
-  // Resolve requester's internal user ID
-  const { data: requester } = await supabase
-    .from('users')
-    .select('id')
-    .eq('email', session.user.email)
-    .single()
-  if (!requester) return NextResponse.json({ error: 'User not found' }, { status: 404 })
-
-  // Check and deduct heart
+  // Check heart balance (but don't deduct yet — only charge on success)
   const { data: hearts } = await supabase
     .from('hearts')
     .select('id, remaining')
-    .eq('user_id', requester.id)
+    .eq('user_id', user.id)
     .single()
 
   if (!hearts || hearts.remaining < 1) {
     return NextResponse.json({ error: 'No hearts remaining. Try again tomorrow.' }, { status: 429 })
   }
 
-  await supabase
-    .from('hearts')
-    .update({ remaining: hearts.remaining - 1 })
-    .eq('id', hearts.id)
-
-  // Fetch relevant progress logs
   let logsQuery = supabase.from('progress_logs').select('title,description,status,created_at')
   if (projectId) logsQuery = logsQuery.eq('project_id', projectId)
   if (subjectUserId) logsQuery = logsQuery.eq('user_id', subjectUserId)
   const { data: logs } = await logsQuery.order('created_at', { ascending: false }).limit(30)
 
+  // Run AI — deduct heart only if the call succeeds
   const answer = await runAgentQuery({
-    requesterId: requester.id,
+    requesterId: user.id,
     subjectUserId,
     projectId,
     query,
     progressLogs: logs ?? [],
   })
+
+  await supabase
+    .from('hearts')
+    .update({ remaining: hearts.remaining - 1 })
+    .eq('id', hearts.id)
 
   return NextResponse.json({ answer })
 }
