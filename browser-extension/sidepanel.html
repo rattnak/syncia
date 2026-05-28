@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Syncia</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f9fafb;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── Top bar ── */
+    #topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      background: #fff;
+      border-bottom: 1px solid #e5e7eb;
+      flex-shrink: 0;
+      gap: 8px;
+    }
+
+    #topbar .brand {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #111827;
+    }
+
+    #topbar .brand svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    #url-display {
+      flex: 1;
+      font-size: 11px;
+      color: #9ca3af;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      text-align: center;
+    }
+
+    #topbar-actions {
+      display: flex;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+
+    #topbar-actions button {
+      background: none;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      cursor: pointer;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #6b7280;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    #topbar-actions button:hover {
+      background: #f3f4f6;
+      color: #111827;
+    }
+
+    #topbar-actions button svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    /* ── Error / loading screen ── */
+    #overlay {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      padding: 32px 24px;
+      text-align: center;
+    }
+
+    #overlay.hidden { display: none; }
+
+    #overlay .logo {
+      width: 52px;
+      height: 52px;
+      background: #2563eb;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -1px;
+    }
+
+    #overlay h2 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #111827;
+    }
+
+    #overlay p {
+      font-size: 13px;
+      color: #6b7280;
+      line-height: 1.5;
+      max-width: 260px;
+    }
+
+    #overlay .url-input-row {
+      display: flex;
+      gap: 8px;
+      width: 100%;
+      max-width: 300px;
+    }
+
+    #overlay input {
+      flex: 1;
+      padding: 8px 10px;
+      font-size: 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      outline: none;
+      color: #111827;
+      background: #fff;
+    }
+
+    #overlay input:focus { border-color: #2563eb; }
+
+    #overlay button.primary {
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.15s;
+    }
+
+    #overlay button.primary:hover { background: #1d4ed8; }
+
+    #overlay .hint {
+      font-size: 11px;
+      color: #9ca3af;
+    }
+
+    /* ── The iframe ── */
+    #frame-wrap {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+    }
+
+    #frame-wrap.hidden { display: none; }
+
+    iframe {
+      flex: 1;
+      width: 100%;
+      border: none;
+      display: block;
+    }
+
+    /* ── Loading spinner ── */
+    .spinner {
+      width: 24px;
+      height: 24px;
+      border: 3px solid #e5e7eb;
+      border-top-color: #2563eb;
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<!-- Top navigation bar -->
+<div id="topbar">
+  <div class="brand">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:#2563eb">
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+      <circle cx="9" cy="7" r="4"/>
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+      <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+    </svg>
+    Syncia
+  </div>
+  <div id="url-display"></div>
+  <div id="topbar-actions">
+    <!-- Reload -->
+    <button id="btn-reload" title="Reload">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="23 4 23 10 17 10"/>
+        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+      </svg>
+    </button>
+    <!-- Open in tab -->
+    <button id="btn-open-tab" title="Open in new tab">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+        <polyline points="15 3 21 3 21 9"/>
+        <line x1="10" y1="14" x2="21" y2="3"/>
+      </svg>
+    </button>
+    <!-- Settings -->
+    <button id="btn-settings" title="Change URL">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/>
+        <line x1="12" y1="2" x2="12" y2="5"/>
+        <line x1="12" y1="19" x2="12" y2="22"/>
+        <line x1="2" y1="12" x2="5" y2="12"/>
+        <line x1="19" y1="12" x2="22" y2="12"/>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<!-- Config / error overlay (shown before app is loaded) -->
+<div id="overlay">
+  <div class="logo">S</div>
+  <h2 id="overlay-title">Connect to Syncia</h2>
+  <p id="overlay-desc">Enter the URL where your Syncia app is running.</p>
+
+  <div class="url-input-row">
+    <input id="url-input" type="url" placeholder="http://localhost:3000" />
+    <button class="primary" id="btn-connect">Connect</button>
+  </div>
+
+  <span class="hint">Default: http://localhost:3000</span>
+</div>
+
+<!-- App iframe -->
+<div id="frame-wrap" class="hidden">
+  <iframe id="app-frame" allow="clipboard-write; clipboard-read"></iframe>
+</div>
+
+<script>
+  const STORAGE_KEY = 'syncia_url'
+  const DEFAULT_URL = 'http://localhost:3000'
+
+  const overlay    = document.getElementById('overlay')
+  const frameWrap  = document.getElementById('frame-wrap')
+  const frame      = document.getElementById('app-frame')
+  const urlInput   = document.getElementById('url-input')
+  const urlDisplay = document.getElementById('url-display')
+  const titleEl    = document.getElementById('overlay-title')
+  const descEl     = document.getElementById('overlay-desc')
+
+  // ── Helpers ──────────────────────────────────────────────────────────
+  function savedUrl() {
+    return localStorage.getItem(STORAGE_KEY) || ''
+  }
+
+  function normalise(raw) {
+    try {
+      const u = new URL(raw.trim())
+      return u.origin  // strip trailing slash / path
+    } catch {
+      return ''
+    }
+  }
+
+  function showOverlay(title, desc) {
+    titleEl.textContent = title || 'Connect to Syncia'
+    descEl.textContent  = desc  || 'Enter the URL where your Syncia app is running.'
+    overlay.classList.remove('hidden')
+    frameWrap.classList.add('hidden')
+    urlDisplay.textContent = ''
+  }
+
+  function loadApp(url) {
+    frame.src = url + '/dashboard'
+    urlDisplay.textContent = url
+    overlay.classList.add('hidden')
+    frameWrap.classList.remove('hidden')
+  }
+
+  // ── Boot ─────────────────────────────────────────────────────────────
+  const stored = savedUrl()
+  if (stored) {
+    urlInput.value = stored
+    loadApp(stored)
+  } else {
+    urlInput.value = DEFAULT_URL
+    showOverlay('Connect to Syncia', 'Enter the URL where your Syncia app is running.')
+  }
+
+  // ── Connect button ───────────────────────────────────────────────────
+  document.getElementById('btn-connect').addEventListener('click', () => {
+    const url = normalise(urlInput.value || DEFAULT_URL)
+    if (!url) {
+      urlInput.style.borderColor = '#ef4444'
+      return
+    }
+    urlInput.style.borderColor = ''
+    localStorage.setItem(STORAGE_KEY, url)
+    loadApp(url)
+  })
+
+  urlInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') document.getElementById('btn-connect').click()
+  })
+
+  // ── Reload ───────────────────────────────────────────────────────────
+  document.getElementById('btn-reload').addEventListener('click', () => {
+    if (frame.src) frame.src = frame.src
+  })
+
+  // ── Open in tab ──────────────────────────────────────────────────────
+  document.getElementById('btn-open-tab').addEventListener('click', () => {
+    const url = savedUrl() || DEFAULT_URL
+    chrome.tabs.create({ url: url + '/dashboard' })
+  })
+
+  // ── Settings (show overlay to change URL) ───────────────────────────
+  document.getElementById('btn-settings').addEventListener('click', () => {
+    showOverlay('Change Syncia URL', 'Update the URL where your Syncia app is running.')
+    urlInput.value = savedUrl() || DEFAULT_URL
+  })
+
+  // ── Handle iframe load errors gracefully ─────────────────────────────
+  frame.addEventListener('error', () => {
+    showOverlay(
+      'Could not load Syncia',
+      'Make sure the app is running at the URL you configured, then try again.'
+    )
+  })
+</script>
+
+</body>
+</html>
