@@ -6,15 +6,15 @@
 
 const MOCK_USER = {
   id: 'demo-user-001',
-  email: 'chanrattnak.mong@fhsu.edu',
+  email: 'c_mong@fhsu.edu',
   user_metadata: {},
 }
 
 const MOCK_PROFILES = [
-  { id: 'demo-user-001', email: 'chanrattnak.mong@fhsu.edu', full_name: 'Chanrattnak Mong', role: 'supervisor' },
-  { id: 'demo-user-002', email: 'jane.smith@fhsu.edu',     full_name: 'Jane Smith',      role: 'member' },
-  { id: 'demo-user-003', email: 'bob.johnson@fhsu.edu',    full_name: 'Bob Johnson',     role: 'member' },
-  { id: 'demo-user-004', email: 'alice.wong@fhsu.edu',     full_name: 'Alice Wong',      role: 'member' },
+  { id: 'demo-user-001', email: 'c_mong@fhsu.edu', full_name: 'Chanrattnak Mong', role: 'supervisor' },
+  { id: 'demo-user-002', email: 'j_smith@fhsu.edu',     full_name: 'Jane Smith',      role: 'member' },
+  { id: 'demo-user-003', email: 'b_johnson@fhsu.edu',    full_name: 'Bob Johnson',     role: 'member' },
+  { id: 'demo-user-004', email: 'a_wong@fhsu.edu',     full_name: 'Alice Wong',      role: 'member' },
 ]
 
 const MOCK_PROJECTS = [
@@ -57,7 +57,7 @@ const MOCK_PROGRESS_LOGS = [
 
 // Typed properly so items can be added
 const MOCK_INVITES: Array<Record<string, unknown>> = [
-  { id: 'inv-001', project_id: 'proj-001', invited_email: 'newperson@fhsu.edu', invited_by: 'demo-user-001', token: 'demo-invite-token-001', status: 'pending', expires_at: new Date(Date.now() + 7 * 24 * 3600_000).toISOString(), created_at: new Date().toISOString() },
+  { id: 'inv-001', project_id: 'proj-001', invited_email: 'n_person@fhsu.edu', invited_by: 'demo-user-001', token: 'demo-invite-token-001', status: 'pending', expires_at: new Date(Date.now() + 7 * 24 * 3600_000).toISOString(), created_at: new Date().toISOString() },
 ]
 
 const MOCK_HEARTS = { id: 'h-001', user_id: 'demo-user-001', remaining: 8, daily_limit: 10, last_reset: new Date().toISOString() }
