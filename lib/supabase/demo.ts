@@ -71,7 +71,7 @@ function makeQueryBuilder(initialRows: Row[]) {
   let isSingle = false
 
   const builder = {
-    select(_cols?: string) { return builder },
+    select(_cols?: string) { void _cols; return builder },
     eq(col: string, val: unknown) {
       rows = rows.filter(r => r[col] === val)
       return builder
@@ -105,8 +105,8 @@ function makeQueryBuilder(initialRows: Row[]) {
       rows = items.map(item => ({ id: `new-${Date.now()}`, created_at: new Date().toISOString(), ...item }))
       return builder
     },
-    update(_payload: Row) { return builder },
-    upsert(_payload: Row | Row[], _opts?: unknown) { return builder },
+    update(_payload: Row) { void _payload; return builder },
+    upsert(_payload: Row | Row[], _opts?: unknown) { void _payload; void _opts; return builder },
     delete() { return builder },
     // Resolve — always returns { data, error }
     then(resolve: (v: { data: Row | Row[] | null; error: null }) => unknown) {

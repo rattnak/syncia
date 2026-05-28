@@ -44,7 +44,7 @@ export default function SupervisorAIQuery({ members }: SupervisorAIQueryProps) {
         <span className="text-lg">✦</span>
         <div>
           <h2 className="font-semibold text-gray-800 text-sm">AI Agent</h2>
-          <p className="text-xs text-gray-400">Ask about a member's work. Uses 1 ♥ per query.</p>
+          <p className="text-xs text-gray-400">Ask about a member&apos;s work. Uses 1 ♥ per query.</p>
         </div>
       </div>
 

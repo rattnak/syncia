@@ -1,7 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
-import Link from 'next/link'
-import InviteMemberForm from './InviteMemberForm'
 import ProjectPageClient from './ProjectPageClient'
 
 export default async function ProjectPage({ params }: { params: { id: string } }) {
