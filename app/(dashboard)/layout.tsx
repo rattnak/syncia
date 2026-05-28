@@ -1,9 +1,11 @@
 import { createClient } from '@/lib/supabase/server'
+import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import DashboardShell from '@/components/DashboardShell'
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const isDemo = process.env.DEMO_MODE === 'true'
+  const cookieStore = await cookies()
+  const isDemo = process.env.DEMO_MODE === 'true' || cookieStore.get('syncia-demo')?.value === '1'
 
   let email = 'c_mong@fhsu.edu'
   if (!isDemo) {

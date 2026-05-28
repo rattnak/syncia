@@ -4,11 +4,10 @@ import type { Database } from '@/types/database'
 import { createDemoClient } from './demo'
 
 export async function createClient() {
-  if (process.env.DEMO_MODE === 'true') {
+  const cookieStore = await cookies()
+  if (process.env.DEMO_MODE === 'true' || cookieStore.get('syncia-demo')?.value === '1') {
     return createDemoClient() as unknown as ReturnType<typeof createServerClient<Database>>
   }
-
-  const cookieStore = await cookies()
 
   return createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

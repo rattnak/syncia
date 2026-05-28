@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
   // Demo mode: skip all auth checks so the UI can be previewed without any backend
-  if (process.env.DEMO_MODE === 'true') {
+  if (process.env.DEMO_MODE === 'true' || request.cookies.get('syncia-demo')?.value === '1') {
     return NextResponse.next()
   }
 

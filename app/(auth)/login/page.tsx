@@ -1,12 +1,10 @@
 'use client'
 
 import { signIn } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false)
-  const router = useRouter()
 
   async function handleSSO() {
     setLoading(true)
@@ -38,12 +36,12 @@ export default function LoginPage() {
           <div className="flex-1 h-px bg-gray-200" />
         </div>
 
-        <button
-          onClick={() => router.push('/dashboard')}
+        <a
+          href="/api/auth/demo"
           className="w-full flex items-center justify-center gap-2 bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-800 font-medium text-sm py-2.5 px-4 rounded-lg transition"
         >
           ⚡ Preview in demo mode
-        </button>
+        </a>
 
         <p className="text-xs text-gray-400 text-center">
           Use your FHSU Microsoft account (@fhsu.edu). You will be redirected to Microsoft to sign in.
