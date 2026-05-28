@@ -6,12 +6,12 @@
 
 const MOCK_USER = {
   id: 'demo-user-001',
-  email: 'nak.chanrattna@fhsu.edu',
+  email: 'chanrattnak.mong@fhsu.edu',
   user_metadata: {},
 }
 
 const MOCK_PROFILES = [
-  { id: 'demo-user-001', email: 'nak.chanrattna@fhsu.edu', full_name: 'Nak Chanrattna', role: 'supervisor' },
+  { id: 'demo-user-001', email: 'chanrattnak.mong@fhsu.edu', full_name: 'Chanrattnak Mong', role: 'supervisor' },
   { id: 'demo-user-002', email: 'jane.smith@fhsu.edu',     full_name: 'Jane Smith',      role: 'member' },
   { id: 'demo-user-003', email: 'bob.johnson@fhsu.edu',    full_name: 'Bob Johnson',     role: 'member' },
   { id: 'demo-user-004', email: 'alice.wong@fhsu.edu',     full_name: 'Alice Wong',      role: 'member' },

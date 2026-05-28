@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
           subject: 'TILT Website Redesign – Sprint Review',
           start: new Date(now.getTime() + 2 * 3600_000).toISOString(),
           end: new Date(now.getTime() + 3 * 3600_000).toISOString(),
-          attendeeEmails: ['nak.chanrattna@fhsu.edu', 'jane.smith@fhsu.edu'],
+          attendeeEmails: ['chanrattnak.mong@fhsu.edu', 'jane.smith@fhsu.edu'],
           joinUrl: null,
           projectId: 'proj-001',
           projectName: 'TILT Website Redesign',
