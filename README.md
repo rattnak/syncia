@@ -1,36 +1,94 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Syncia
+
+A project collaboration platform for FHSU student teams — built with Next.js 15, Supabase, and Microsoft Graph.
+
+## Features
+
+- **Azure AD SSO** — sign-in restricted to `@fhsu.edu` accounts
+- **Project workspace** — create projects, invite team members, track tasks and milestones
+- **Microsoft Graph integration**
+  - Outlook Calendar: view upcoming meetings matched to your projects
+  - Teams channels: auto-create a private Teams channel per project
+- **AI assistant** — project-aware chat powered by Claude
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Framework | Next.js 15 (App Router) |
+| Auth | NextAuth.js + Azure AD (MSAL) |
+| Database | Supabase (Postgres + RLS) |
+| Graph API | Microsoft Graph v1.0 (delegated tokens) |
+| Styling | Tailwind CSS |
+| Deployment | Vercel |
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- Node.js 18+
+- A Supabase project
+- An Azure AD app registration with the following **delegated** permissions (admin-consented):
+  - `Calendars.Read`, `Calendars.ReadWrite`
+  - `Channel.ReadBasic.All`, `Channel.Create`
+  - `ChannelMember.ReadWrite.All`, `ChannelMessage.Read.All`
+
+### Environment variables
+
+Create a `.env.local` file:
+
+```env
+# Azure AD
+AZURE_AD_CLIENT_ID=
+AZURE_AD_CLIENT_SECRET=
+AZURE_AD_TENANT_ID=
+
+# Microsoft Teams — object ID of the FHSU-wide Team
+GRAPH_TEAM_ID=
+
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+
+# NextAuth
+NEXTAUTH_SECRET=
+NEXTAUTH_URL=http://localhost:3000
+
+# Optional: enable demo mode (no real auth required)
+DEMO_MODE=false
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Run locally
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm install
+npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Open [http://localhost:3000](http://localhost:3000).
 
-## Learn More
+## Authentication & Token Refresh
 
-To learn more about Next.js, take a look at the following resources:
+Sign-in uses Azure AD via NextAuth. The JWT callback stores the Graph `access_token` and `refresh_token`. When the access token is within 60 seconds of expiry, it is silently refreshed using the refresh token against the Azure AD `/oauth2/v2.0/token` endpoint — no re-login required.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+If refresh fails (e.g. the refresh token itself expires after 90 days of inactivity), the session is tagged with `error: "RefreshAccessTokenError"` and the user is prompted to sign in again.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Project Structure
 
-## Deploy on Vercel
+```
+app/             # Next.js App Router pages and API routes
+  api/
+    calendar/    # Graph calendar endpoints
+    projects/    # Project CRUD
+components/      # Shared React components
+lib/
+  auth.ts        # NextAuth config with token refresh
+  graph/         # Microsoft Graph API client
+  supabase/      # Supabase client helpers
+types/           # TypeScript type extensions
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Deployment
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Deploy to Vercel. Set all environment variables in the Vercel project settings. Set `NEXTAUTH_URL` to your production URL.

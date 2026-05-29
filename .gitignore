@@ -28,6 +28,9 @@ yarn-error.log*
 # local env files
 .env*.local
 
+# extension credentials (contains Supabase keys)
+extension/config.js
+
 # vercel
 .vercel
 
