@@ -2,6 +2,10 @@ export type UserRole = 'member' | 'supervisor' | 'admin'
 export type MemberRole = 'leader' | 'member'
 export type MemberStatus = 'pending' | 'active' | 'declined' | 'left' | 'removed'
 export type ProgressStatus = 'not_started' | 'in_progress' | 'done'
+export type MilestoneStatus = 'open' | 'in_progress' | 'completed' | 'cancelled'
+export type TaskStatus = 'not_started' | 'in_progress' | 'done' | 'cancelled'
+export type TaskPriority = 'low' | 'medium' | 'high'
+export type NotificationType = 'task_overdue' | 'task_assigned' | 'project_stale' | 'milestone_due' | 'invite_received'
 
 export interface Database {
   public: {
@@ -118,6 +122,69 @@ export interface Database {
         }
         Insert: Omit<Database['public']['Tables']['ai_audit_log']['Row'], 'id' | 'created_at'>
         Update: never
+        Relationships: []
+      }
+      milestones: {
+        Row: {
+          id: string
+          project_id: string
+          title: string
+          description: string | null
+          target_date: string | null
+          status: MilestoneStatus
+          created_by: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: Omit<Database['public']['Tables']['milestones']['Row'], 'id' | 'created_at' | 'updated_at'>
+        Update: Partial<Omit<Database['public']['Tables']['milestones']['Row'], 'id' | 'created_at'>> & { updated_at?: string }
+        Relationships: []
+      }
+      tasks: {
+        Row: {
+          id: string
+          project_id: string
+          milestone_id: string | null
+          title: string
+          description: string | null
+          assignee_id: string | null
+          due_date: string | null
+          priority: TaskPriority
+          status: TaskStatus
+          created_by: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: Omit<Database['public']['Tables']['tasks']['Row'], 'id' | 'created_at' | 'updated_at'>
+        Update: Partial<Omit<Database['public']['Tables']['tasks']['Row'], 'id' | 'created_at'>> & { updated_at?: string }
+        Relationships: []
+      }
+      subtasks: {
+        Row: {
+          id: string
+          task_id: string
+          title: string
+          is_completed: boolean
+          assignee_id: string | null
+          due_date: string | null
+          created_by: string
+          created_at: string
+        }
+        Insert: Omit<Database['public']['Tables']['subtasks']['Row'], 'id' | 'created_at'>
+        Update: Partial<Omit<Database['public']['Tables']['subtasks']['Row'], 'id' | 'created_at'>>
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          id: string
+          user_id: string
+          type: NotificationType
+          payload: Record<string, unknown>
+          is_read: boolean
+          created_at: string
+        }
+        Insert: Omit<Database['public']['Tables']['notifications']['Row'], 'id' | 'created_at'>
+        Update: Partial<Pick<Database['public']['Tables']['notifications']['Row'], 'is_read'>>
         Relationships: []
       }
     }
