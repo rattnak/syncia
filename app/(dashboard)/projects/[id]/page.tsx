@@ -2,7 +2,8 @@ import { createClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import ProjectPageClient from './ProjectPageClient'
 
-export default async function ProjectPage({ params }: { params: { id: string } }) {
+export default async function ProjectPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -10,7 +11,7 @@ export default async function ProjectPage({ params }: { params: { id: string } }
   const { data: project } = await supabase
     .from('projects')
     .select('id, name, description, created_at, teams_channel_id, teams_channel_url')
-    .eq('id', params.id)
+    .eq('id', id)
     .single()
 
   if (!project) notFound()
@@ -18,7 +19,7 @@ export default async function ProjectPage({ params }: { params: { id: string } }
   const { data: myMembership } = await supabase
     .from('project_members')
     .select('role, status, share_with_supervisor, supervisor_id')
-    .eq('project_id', params.id)
+    .eq('project_id', id)
     .eq('user_id', user.id)
     .eq('status', 'active')
     .single()
@@ -29,7 +30,7 @@ export default async function ProjectPage({ params }: { params: { id: string } }
   const { data: memberRows } = await supabase
     .from('project_members')
     .select('role, status, user_id')
-    .eq('project_id', params.id)
+    .eq('project_id', id)
     .in('status', ['active', 'pending'])
 
   const memberUserIds = memberRows?.map((m) => m.user_id) ?? []
@@ -47,7 +48,7 @@ export default async function ProjectPage({ params }: { params: { id: string } }
     ? await supabase
         .from('availability')
         .select('user_id, is_focused')
-        .eq('project_id', params.id)
+        .eq('project_id', id)
         .in('user_id', memberUserIds)
     : { data: [] }
 
@@ -58,7 +59,7 @@ export default async function ProjectPage({ params }: { params: { id: string } }
   const { data: logsRaw } = await supabase
     .from('progress_logs')
     .select('id, title, description, status, created_at, updated_at, user_id')
-    .eq('project_id', params.id)
+    .eq('project_id', id)
     .order('created_at', { ascending: false })
 
   const logUserIds = Array.from(new Set((logsRaw ?? []).map((l) => l.user_id)))
@@ -83,6 +84,37 @@ export default async function ProjectPage({ params }: { params: { id: string } }
     email: p.email ?? '',
   }))
 
+  // Milestones + tasks + subtasks
+  const { data: milestonesRaw } = await supabase
+    .from('milestones')
+    .select('*')
+    .eq('project_id', id)
+    .order('target_date', { ascending: true })
+
+  const { data: tasksRaw } = await supabase
+    .from('tasks')
+    .select('*')
+    .eq('project_id', id)
+    .order('due_date', { ascending: true })
+
+  const taskIds = (tasksRaw ?? []).map((t) => t.id)
+  const { data: subtasksRaw } = taskIds.length
+    ? await supabase.from('subtasks').select('*').in('task_id', taskIds).order('created_at', { ascending: true })
+    : { data: [] }
+
+  // Enrich tasks with assignee profiles
+  const taskAssigneeIds = Array.from(new Set((tasksRaw ?? []).map((t) => t.assignee_id).filter(Boolean))) as string[]
+  const { data: taskProfiles } = taskAssigneeIds.length
+    ? await supabase.from('profiles').select('id, full_name, email').in('id', taskAssigneeIds)
+    : { data: [] }
+
+  const milestones = milestonesRaw ?? []
+  const tasks = (tasksRaw ?? []).map((t) => ({
+    ...t,
+    assignee: taskProfiles?.find((p) => p.id === t.assignee_id) ?? null,
+  }))
+  const subtasks = subtasksRaw ?? []
+
   const isLeader = myMembership.role === 'leader'
   const activeMembers = members.filter((m) => m.status === 'active')
 
@@ -93,6 +125,12 @@ export default async function ProjectPage({ params }: { params: { id: string } }
   const membersForAI = activeMembers.map((m) => ({
     user_id: m.user_id,
     name: m.profile?.full_name ?? m.profile?.email ?? m.user_id,
+  }))
+
+  const membersForBoard = activeMembers.map((m) => ({
+    user_id: m.user_id,
+    name: m.profile?.full_name ?? m.profile?.email ?? m.user_id,
+    email: m.profile?.email ?? '',
   }))
 
   return (
@@ -106,6 +144,10 @@ export default async function ProjectPage({ params }: { params: { id: string } }
       isLeader={isLeader}
       memberEmailsForScheduler={memberEmailsForScheduler}
       membersForAI={membersForAI}
+      membersForBoard={membersForBoard}
+      milestones={milestones}
+      tasks={tasks}
+      subtasks={subtasks}
     />
   )
 }

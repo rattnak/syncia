@@ -8,6 +8,8 @@ import ProgressLogForm from '@/components/ProgressLogForm'
 import AIQueryBox from '@/components/AIQueryBox'
 import SharingSettings from '@/components/SharingSettings'
 import MeetingScheduler from '@/components/MeetingScheduler'
+import MilestoneBoard from '@/components/MilestoneBoard'
+import TaskDetailSlider from '@/components/TaskDetailSlider'
 
 interface Profile {
   id: string
@@ -43,6 +45,44 @@ interface Project {
   teams_channel_url: string | null
 }
 
+interface Milestone {
+  id: string
+  project_id: string
+  title: string
+  description: string | null
+  target_date: string | null
+  status: 'open' | 'in_progress' | 'completed' | 'cancelled'
+  created_by: string
+  created_at: string
+}
+
+interface Task {
+  id: string
+  project_id: string
+  milestone_id: string | null
+  title: string
+  description: string | null
+  assignee_id: string | null
+  assignee?: { id: string; full_name: string | null; email: string } | null
+  due_date: string | null
+  priority: 'low' | 'medium' | 'high'
+  status: 'not_started' | 'in_progress' | 'done' | 'cancelled'
+  created_by: string
+  created_at: string
+  updated_at: string
+}
+
+interface Subtask {
+  id: string
+  task_id: string
+  title: string
+  is_completed: boolean
+  assignee_id: string | null
+  due_date: string | null
+  created_by: string
+  created_at: string
+}
+
 interface Props {
   project: Project
   myMembership: { role: string; status: string; share_with_supervisor: boolean; supervisor_id: string | null; user_id: string }
@@ -53,6 +93,10 @@ interface Props {
   isLeader: boolean
   memberEmailsForScheduler: string[]
   membersForAI: Array<{ user_id: string; name: string }>
+  membersForBoard: Array<{ user_id: string; name: string; email: string }>
+  milestones: Milestone[]
+  tasks: Task[]
+  subtasks: Subtask[]
 }
 
 export default function ProjectPageClient({
@@ -65,10 +109,27 @@ export default function ProjectPageClient({
   isLeader,
   memberEmailsForScheduler,
   membersForAI,
+  membersForBoard,
+  milestones: initialMilestones,
+  tasks: initialTasks,
+  subtasks: initialSubtasks,
 }: Props) {
   const [project, setProject] = useState(initialProject)
   const [members, setMembers] = useState(initialMembers)
   const [editing, setEditing] = useState(false)
+
+  // Task detail slider state
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null)
+  const [selectedSubtasks, setSelectedSubtasks] = useState<Subtask[]>([])
+  const [tasks, setTasks] = useState<Task[]>(initialTasks)
+  const [subtasksMap, setSubtasksMap] = useState<Record<string, Subtask[]>>(() => {
+    const map: Record<string, Subtask[]> = {}
+    for (const sub of initialSubtasks) {
+      if (!map[sub.task_id]) map[sub.task_id] = []
+      map[sub.task_id].push(sub)
+    }
+    return map
+  })
 
   function handleProjectSaved(name: string, description: string | null) {
     setProject((p) => ({ ...p, name, description }))
@@ -81,6 +142,20 @@ export default function ProjectPageClient({
 
   function handleRoleChanged(userId: string, newRole: string) {
     setMembers((prev) => prev.map((m) => m.user_id === userId ? { ...m, role: newRole } : m))
+  }
+
+  function handleTaskClick(task: Task, subtaskList: Subtask[]) {
+    setSelectedTask(task)
+    setSelectedSubtasks(subtaskList)
+  }
+
+  function handleTaskUpdated(updated: Omit<Task, 'created_at' | 'updated_at'> & { created_at?: string; updated_at?: string }) {
+    setTasks((prev) => prev.map((t) => t.id === updated.id ? { ...t, ...updated } : t))
+    setSelectedTask(null)
+  }
+
+  function handleSubtasksUpdated(taskId: string, updated: Subtask[]) {
+    setSubtasksMap((prev) => ({ ...prev, [taskId]: updated }))
   }
 
   const activeMembers = members.filter((m) => m.status === 'active')
@@ -153,8 +228,18 @@ export default function ProjectPageClient({
       {/* ── Main grid ───────────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-        {/* Left column: progress logs + AI + scheduler */}
+        {/* Left column: milestones + progress logs + AI + scheduler */}
         <div className="lg:col-span-2 flex flex-col gap-6">
+
+          {/* Milestone Board */}
+          <MilestoneBoard
+            projectId={project.id}
+            initialMilestones={initialMilestones}
+            initialTasks={tasks}
+            members={membersForBoard}
+            isLeader={isLeader}
+            onTaskClick={handleTaskClick}
+          />
 
           {/* Progress Logs */}
           <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
@@ -171,10 +256,8 @@ export default function ProjectPageClient({
             </div>
           </div>
 
-          {/* AI Agent (leaders only) */}
-          {isLeader && (
-            <AIQueryBox projectId={project.id} members={membersForAI} />
-          )}
+          {/* AI Agent — all active members */}
+          <AIQueryBox projectId={project.id} members={membersForAI} />
 
           {/* Meeting Scheduler (leaders with 2+ members) */}
           {isLeader && memberEmailsForScheduler.length > 1 && (
@@ -275,6 +358,18 @@ export default function ProjectPageClient({
           </div>
         </div>
       </div>
+
+      {/* Task detail slider */}
+      {selectedTask && (
+        <TaskDetailSlider
+          task={selectedTask}
+          initialSubtasks={subtasksMap[selectedTask.id] ?? selectedSubtasks}
+          members={membersForBoard}
+          onClose={() => setSelectedTask(null)}
+          onTaskUpdated={handleTaskUpdated}
+          onSubtasksUpdated={handleSubtasksUpdated}
+        />
+      )}
     </div>
   )
 }
