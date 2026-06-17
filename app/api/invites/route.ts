@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createNotification } from '@/lib/notifications'
 
 export async function POST(req: NextRequest) {
   // Demo mode: return a fake but usable invite link
@@ -67,6 +68,22 @@ export async function POST(req: NextRequest) {
     })
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+  // Notify invited user if they already have a profile
+  const { data: invitedProfile } = await supabase
+    .from('profiles')
+    .select('id')
+    .eq('email', normalizedEmail)
+    .single()
+
+  if (invitedProfile) {
+    const { data: project } = await supabase.from('projects').select('name').eq('id', projectId).single()
+    await createNotification({
+      userId: invitedProfile.id,
+      type: 'invite_received',
+      payload: { token, projectId, projectName: project?.name ?? '' },
+    })
+  }
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
   return NextResponse.json({ inviteUrl: `${siteUrl}/invites/${token}`, email: normalizedEmail })

@@ -3,6 +3,10 @@
     {
       "path": "/api/hearts/reset",
       "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/notifications/generate",
+      "schedule": "0 8 * * *"
     }
   ]
 }
