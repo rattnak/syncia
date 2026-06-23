@@ -52,8 +52,20 @@ export async function DELETE(
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { action } = await req.json()
-  if (action !== 'leave') {
-    return NextResponse.json({ error: 'Only the leave action is supported.' }, { status: 400 })
+  if (!['leave', 'delete'].includes(action)) {
+    return NextResponse.json({ error: 'Invalid action.' }, { status: 400 })
+  }
+
+  if (action === 'delete') {
+    const { data: myMembership } = await supabase
+      .from('project_members').select('role')
+      .eq('project_id', params.id).eq('user_id', user.id).eq('status', 'active').single()
+    if (!myMembership || myMembership.role !== 'leader') {
+      return NextResponse.json({ error: 'Only a leader can delete the project.' }, { status: 403 })
+    }
+    const { error } = await supabase.from('projects').delete().eq('id', params.id)
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ success: true })
   }
 
   const { data: myMembership } = await supabase
