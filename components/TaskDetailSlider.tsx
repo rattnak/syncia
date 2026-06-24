@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 interface Profile { id: string; full_name: string | null; email: string }
 
@@ -50,6 +50,15 @@ export default function TaskDetailSlider({ task, initialSubtasks, members, onClo
   const [newSubtaskTitle, setNewSubtaskTitle] = useState('')
   const [addingSubtask, setAddingSubtask] = useState(false)
 
+  // Comments
+  const [comments, setComments] = useState<Array<{
+    id: string; body: string; created_at: string;
+    author: { id: string; full_name: string | null; email: string } | null
+  }>>([])
+  const [commentBody, setCommentBody] = useState('')
+  const [postingComment, setPostingComment] = useState(false)
+  const commentsBottomRef = useRef<HTMLDivElement>(null)
+
   useEffect(() => {
     if (task) {
       setTitle(task.title)
@@ -59,6 +68,12 @@ export default function TaskDetailSlider({ task, initialSubtasks, members, onClo
       setPriority(task.priority)
       setStatus(task.status)
       setSubtasks(initialSubtasks)
+      // Load comments
+      setComments([])
+      fetch(`/api/tasks/${task.id}/comments`)
+        .then((r) => r.json())
+        .then((d) => setComments(d.comments ?? []))
+        .catch(() => {})
     }
   }, [task, initialSubtasks])
 
@@ -134,6 +149,43 @@ export default function TaskDetailSlider({ task, initialSubtasks, members, onClo
     const updated = subtasks.filter((s) => s.id !== subId)
     setSubtasks(updated)
     onSubtasksUpdated(task!.id, updated)
+  }
+
+  async function postComment(e: React.FormEvent) {
+    e.preventDefault()
+    if (!commentBody.trim() || !task) return
+    setPostingComment(true)
+    try {
+      const res = await fetch(`/api/tasks/${task.id}/comments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ body: commentBody.trim() }),
+      })
+      const data = await res.json()
+      if (res.ok) {
+        setComments((prev) => [...prev, data.comment])
+        setCommentBody('')
+        setTimeout(() => commentsBottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
+      }
+    } finally {
+      setPostingComment(false)
+    }
+  }
+
+  async function deleteComment(commentId: string) {
+    if (!task) return
+    await fetch(`/api/tasks/${task.id}/comments/${commentId}`, { method: 'DELETE' })
+    setComments((prev) => prev.filter((c) => c.id !== commentId))
+  }
+
+  function relativeTime(iso: string) {
+    const diff = Date.now() - new Date(iso).getTime()
+    const min = Math.floor(diff / 60000)
+    if (min < 1) return 'just now'
+    if (min < 60) return `${min}m ago`
+    const hr = Math.floor(min / 60)
+    if (hr < 24) return `${hr}h ago`
+    return `${Math.floor(hr / 24)}d ago`
   }
 
   const completed = subtasks.filter((s) => s.is_completed).length
@@ -289,6 +341,59 @@ export default function TaskDetailSlider({ task, initialSubtasks, members, onClo
                 className="bg-gray-100 hover:bg-gray-200 disabled:opacity-50 text-gray-600 text-xs font-medium py-1.5 px-3 rounded-lg transition"
               >
                 Add
+              </button>
+            </form>
+          </div>
+        </div>
+
+          {/* Comments */}
+          <div>
+            <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2 block">
+              Comments {comments.length > 0 && <span className="normal-case font-normal text-gray-400">({comments.length})</span>}
+            </label>
+
+            <div className="flex flex-col gap-3 mb-3">
+              {comments.map((c) => (
+                <div key={c.id} className="group flex gap-2">
+                  <div className="h-6 w-6 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-semibold shrink-0 mt-0.5">
+                    {((c.author?.full_name ?? c.author?.email ?? '?')[0] ?? '?').toUpperCase()}
+                  </div>
+                  <div className="flex-1 min-w-0 bg-gray-50 rounded-lg px-3 py-2">
+                    <div className="flex items-baseline gap-2 justify-between">
+                      <span className="text-xs font-medium text-gray-700">
+                        {c.author?.full_name ?? c.author?.email ?? 'Unknown'}
+                      </span>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <span className="text-xs text-gray-400">{relativeTime(c.created_at)}</span>
+                        <button
+                          onClick={() => deleteComment(c.id)}
+                          className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-400 transition text-xs"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    </div>
+                    <p className="text-xs text-gray-600 mt-0.5 leading-snug">{c.body}</p>
+                  </div>
+                </div>
+              ))}
+              <div ref={commentsBottomRef} />
+            </div>
+
+            <form onSubmit={postComment} className="flex gap-2">
+              <input
+                type="text"
+                value={commentBody}
+                onChange={(e) => setCommentBody(e.target.value)}
+                placeholder="Add a comment…"
+                className="flex-1 border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <button
+                type="submit"
+                disabled={postingComment || !commentBody.trim()}
+                className="bg-gray-100 hover:bg-gray-200 disabled:opacity-50 text-gray-600 text-xs font-medium py-1.5 px-3 rounded-lg transition"
+              >
+                Post
               </button>
             </form>
           </div>

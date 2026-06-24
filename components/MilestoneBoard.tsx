@@ -122,6 +122,22 @@ export default function MilestoneBoard({ projectId, initialMilestones, initialTa
   // Subtasks per task (loaded lazily when task detail opens)
   const [subtasksMap, setSubtasksMap] = useState<Record<string, Subtask[]>>({})
 
+  // Filters
+  const [filterAssignee, setFilterAssignee] = useState('')
+  const [filterPriority, setFilterPriority] = useState('')
+  const [filterStatus, setFilterStatus] = useState('')
+
+  function applyFilters(list: Task[]) {
+    return list.filter((t) => {
+      if (filterAssignee && t.assignee_id !== filterAssignee) return false
+      if (filterPriority && t.priority !== filterPriority) return false
+      if (filterStatus && t.status !== filterStatus) return false
+      return true
+    })
+  }
+
+  const activeFilters = [filterAssignee, filterPriority, filterStatus].filter(Boolean).length
+
   async function addMilestone(e: React.FormEvent) {
     e.preventDefault()
     setMsAdding(true)
@@ -217,8 +233,8 @@ export default function MilestoneBoard({ projectId, initialMilestones, initialTa
     (window as any).__syncSubtasks = onSubtasksUpdated
   }
 
-  const tasksForMilestone = (msId: string) => tasks.filter((t) => t.milestone_id === msId)
-  const unassignedTasks = tasks.filter((t) => !t.milestone_id)
+  const tasksForMilestone = (msId: string) => applyFilters(tasks.filter((t) => t.milestone_id === msId))
+  const unassignedTasks = applyFilters(tasks.filter((t) => !t.milestone_id))
 
   function msProgress(msId: string) {
     const t = tasksForMilestone(msId)
@@ -245,6 +261,50 @@ export default function MilestoneBoard({ projectId, initialMilestones, initialTa
             className="inline-flex items-center gap-1.5 text-xs font-medium text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition"
           >
             {showMsForm ? 'Cancel' : '+ Add milestone'}
+          </button>
+        )}
+      </div>
+
+      {/* Filter bar */}
+      <div className="px-5 py-2.5 border-b border-gray-100 flex flex-wrap items-center gap-2">
+        <span className="text-xs text-gray-400 mr-1">Filter:</span>
+        <select
+          value={filterAssignee}
+          onChange={(e) => setFilterAssignee(e.target.value)}
+          className="text-xs border border-gray-200 rounded-lg px-2 py-1 bg-white focus:outline-none"
+        >
+          <option value="">All assignees</option>
+          {members.map((m) => (
+            <option key={m.user_id} value={m.user_id}>{m.name || m.email}</option>
+          ))}
+        </select>
+        <select
+          value={filterPriority}
+          onChange={(e) => setFilterPriority(e.target.value)}
+          className="text-xs border border-gray-200 rounded-lg px-2 py-1 bg-white focus:outline-none"
+        >
+          <option value="">All priorities</option>
+          <option value="high">High</option>
+          <option value="medium">Medium</option>
+          <option value="low">Low</option>
+        </select>
+        <select
+          value={filterStatus}
+          onChange={(e) => setFilterStatus(e.target.value)}
+          className="text-xs border border-gray-200 rounded-lg px-2 py-1 bg-white focus:outline-none"
+        >
+          <option value="">All statuses</option>
+          <option value="not_started">Not Started</option>
+          <option value="in_progress">In Progress</option>
+          <option value="done">Done</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+        {activeFilters > 0 && (
+          <button
+            onClick={() => { setFilterAssignee(''); setFilterPriority(''); setFilterStatus('') }}
+            className="text-xs text-gray-400 hover:text-red-500 transition px-2 py-1 rounded-lg hover:bg-red-50"
+          >
+            Clear filters
           </button>
         )}
       </div>

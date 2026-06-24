@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 import { signOut } from 'next-auth/react'
 import { useEffect, useRef, useState } from 'react'
 import NotificationBell from '@/components/NotificationBell'
+import SearchBar from '@/components/SearchBar'
 
 // ── Hearts badge ──────────────────────────────────────────────────────────────
 function HeartBadge() {
@@ -170,6 +171,7 @@ export default function DashboardShell({ email, children, isDemo }: DashboardShe
         </div>
 
         <div className="flex items-center gap-3">
+          <SearchBar />
           <HeartBadge />
           <NotificationBell />
           <UserMenu email={email} isDemo={isDemo} onSignOut={handleSignOut} />
