@@ -50,6 +50,25 @@ export default function AIQueryBox({ projectId, members }: AIQueryBoxProps) {
         </div>
       </div>
 
+      {/* Quick actions */}
+      <div className="flex gap-2 mb-3 flex-wrap">
+        {[
+          'Give me a full status summary of this project: what\'s done, what\'s in progress, what\'s blocked, and what\'s coming up.',
+          'What tasks are overdue or at risk?',
+          'Who is the most active contributor this week?',
+        ].map((preset) => (
+          <button
+            key={preset}
+            type="button"
+            onClick={() => setQuery(preset)}
+            className="text-xs text-blue-600 bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-full border border-blue-100 transition truncate max-w-[200px]"
+            title={preset}
+          >
+            {preset.length > 30 ? preset.slice(0, 30) + '…' : preset}
+          </button>
+        ))}
+      </div>
+
       <form onSubmit={handleAsk} className="flex flex-col gap-3">
         {members.length > 1 && (
           <select
