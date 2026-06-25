@@ -242,7 +242,9 @@ interface DashboardShellProps {
 export default function DashboardShell({ email, children, isDemo }: DashboardShellProps) {
   function handleSignOut() {
     if (isDemo) {
-      window.location.href = '/login'
+      // Clear demo cookie then go to login
+      document.cookie = 'syncia-demo=; path=/; max-age=0'
+      window.location.href = '/api/auth/exit-demo'
     } else {
       signOut({ callbackUrl: '/login' })
     }
@@ -263,7 +265,14 @@ export default function DashboardShell({ email, children, isDemo }: DashboardShe
           <svg className="h-3.5 w-3.5 text-amber-500 shrink-0" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
           </svg>
-          <span><strong>Demo mode</strong> — showing mock data. Sign in with your FHSU account to use the live app.</span>
+          <span><strong>Demo mode</strong> — showing mock data.</span>
+          <a
+            href="/api/auth/exit-demo"
+            className="underline font-semibold hover:text-amber-900 ml-1"
+            onClick={() => { document.cookie = 'syncia-demo=; path=/; max-age=0' }}
+          >
+            Sign in with your FHSU account →
+          </a>
         </div>
       )}
 

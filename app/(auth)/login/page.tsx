@@ -8,6 +8,10 @@ export default function LoginPage() {
 
   async function handleSSO() {
     setLoading(true)
+    // Clear any active demo session before redirecting to Microsoft
+    await fetch('/api/auth/exit-demo').catch(() => {})
+    // Delete the cookie client-side too for instant effect
+    document.cookie = 'syncia-demo=; path=/; max-age=0'
     await signIn('azure-ad', { callbackUrl: '/dashboard' })
   }
 
