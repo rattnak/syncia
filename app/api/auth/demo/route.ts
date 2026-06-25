@@ -1,9 +1,8 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 
-export async function GET() {
-  const res = NextResponse.redirect(
-    new URL('/dashboard', process.env.NEXT_PUBLIC_SITE_URL ?? 'https://syncia.vercel.app')
-  )
+export async function GET(req: NextRequest) {
+  const dashboardUrl = new URL('/dashboard', req.url)
+  const res = NextResponse.redirect(dashboardUrl)
   res.cookies.set('syncia-demo', '1', {
     httpOnly: true,
     sameSite: 'lax',
