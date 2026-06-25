@@ -6,7 +6,7 @@ export async function POST(req: NextRequest) {
   // Demo mode: return a fake but usable invite link
   if (process.env.DEMO_MODE === 'true') {
     const { email } = await req.json()
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? process.env.NEXTAUTH_URL ?? 'http://localhost:3000'
     return NextResponse.json({ inviteUrl: `${siteUrl}/invites/demo-invite-token-001`, email })
   }
 
@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
     .single()
 
   if (existingInvite) {
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? process.env.NEXTAUTH_URL ?? 'http://localhost:3000'
     return NextResponse.json({ inviteUrl: `${siteUrl}/invites/${existingInvite.token}`, email: normalizedEmail, reused: true })
   }
 
@@ -85,6 +85,6 @@ export async function POST(req: NextRequest) {
     })
   }
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? process.env.NEXTAUTH_URL ?? 'http://localhost:3000'
   return NextResponse.json({ inviteUrl: `${siteUrl}/invites/${token}`, email: normalizedEmail })
 }
