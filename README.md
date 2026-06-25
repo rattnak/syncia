@@ -216,9 +216,9 @@ erDiagram
 
   hearts {
     uuid id PK
-    uuid user_id UK FK
-    int remaining
-    int daily_limit
+    uuid user_id FK
+    integer remaining
+    integer daily_limit
     timestamptz last_reset
   }
 
