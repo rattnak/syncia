@@ -49,7 +49,7 @@ export default async function BriefingPage() {
     .select('id, title, status, due_date, priority, project_id')
     .eq('assignee_id', user.id)
     .lte('due_date', sevenDaysOut)
-    .not('status', 'in', '("done","cancelled")')
+    .not('status', 'in', '(done,cancelled)')
     .order('due_date', { ascending: true })
 
   const myTaskProjectIds = Array.from(new Set((myTaskRows ?? []).map((t) => t.project_id)))
@@ -72,7 +72,7 @@ export default async function BriefingPage() {
         .from('tasks')
         .select('project_id, status, due_date')
         .in('project_id', projectIds)
-        .not('status', 'in', '("done","cancelled")')
+        .not('status', 'in', '(done,cancelled)')
     : { data: [] }
 
   const { data: allMilestones } = projectIds.length
@@ -80,7 +80,7 @@ export default async function BriefingPage() {
         .from('milestones')
         .select('project_id, status')
         .in('project_id', projectIds)
-        .not('status', 'in', '("completed","cancelled")')
+        .not('status', 'in', '(completed,cancelled)')
     : { data: [] }
 
   const today = new Date().toISOString().slice(0, 10)

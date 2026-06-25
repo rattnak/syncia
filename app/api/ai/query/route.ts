@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
       .from('tasks')
       .select('title, status, due_date, priority, assignee_id')
       .eq('project_id', projectId)
-      .not('status', 'in', '("cancelled")')
+      .not('status', 'in', '(cancelled)')
       .order('due_date', { ascending: true })
       .limit(40)
 
@@ -66,7 +66,7 @@ export async function POST(req: NextRequest) {
       .from('milestones')
       .select('title, status, target_date')
       .eq('project_id', projectId)
-      .not('status', 'in', '("cancelled")')
+      .not('status', 'in', '(cancelled)')
       .order('target_date', { ascending: true })
 
     milestones = (msRows ?? []).map((m) => ({ title: m.title, status: m.status, target_date: m.target_date }))

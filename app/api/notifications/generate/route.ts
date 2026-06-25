@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
     .from('tasks')
     .select('id, title, project_id, assignee_id')
     .lt('due_date', today)
-    .not('status', 'in', '("done","cancelled")')
+    .not('status', 'in', '(done,cancelled)')
     .not('assignee_id', 'is', null)
 
   for (const task of overdueTasks ?? []) {
@@ -41,7 +41,7 @@ export async function GET(req: NextRequest) {
     .select('id, title, project_id, target_date')
     .lte('target_date', threeDaysOut)
     .gte('target_date', today)
-    .not('status', 'in', '("completed","cancelled")')
+    .not('status', 'in', '(completed,cancelled)')
 
   for (const ms of dueMilestones ?? []) {
     const { data: members } = await supabase
