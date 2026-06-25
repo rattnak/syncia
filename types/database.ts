@@ -187,6 +187,34 @@ export interface Database {
         Update: Partial<Pick<Database['public']['Tables']['notifications']['Row'], 'is_read'>>
         Relationships: []
       }
+      task_comments: {
+        Row: {
+          id: string
+          task_id: string
+          user_id: string
+          body: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: Omit<Database['public']['Tables']['task_comments']['Row'], 'id' | 'created_at' | 'updated_at'>
+        Update: Partial<Pick<Database['public']['Tables']['task_comments']['Row'], 'body'>>
+        Relationships: []
+      }
+      activity_feed: {
+        Row: {
+          id: string
+          project_id: string
+          actor_id: string | null
+          entity_type: string
+          entity_id: string | null
+          action: string
+          meta: Record<string, unknown>
+          created_at: string
+        }
+        Insert: Omit<Database['public']['Tables']['activity_feed']['Row'], 'id' | 'created_at'>
+        Update: never
+        Relationships: []
+      }
     }
     Views: Record<string, never>
     Functions: Record<string, never>

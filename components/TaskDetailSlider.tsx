@@ -344,7 +344,6 @@ export default function TaskDetailSlider({ task, initialSubtasks, members, onClo
               </button>
             </form>
           </div>
-        </div>
 
           {/* Comments */}
           <div>

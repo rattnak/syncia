@@ -49,14 +49,14 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     .select('*, author:profiles(id, full_name, email)')
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error || !comment) return NextResponse.json({ error: error?.message ?? 'Insert failed' }, { status: 500 })
 
   // Log to activity feed (fire-and-forget)
   await logActivity({
     projectId: task.project_id,
     actorId: user.id,
     entityType: 'comment',
-    entityId: comment.id,
+    entityId: (comment as { id: string }).id,
     action: 'commented',
     meta: { taskId: id, taskTitle: task.title },
   })
