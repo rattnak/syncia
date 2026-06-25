@@ -60,7 +60,46 @@ const MOCK_INVITES: Array<Record<string, unknown>> = [
   { id: 'inv-001', project_id: 'proj-001', invited_email: 'n_person@fhsu.edu', invited_by: 'demo-user-001', token: 'demo-invite-token-001', status: 'pending', expires_at: new Date(Date.now() + 7 * 24 * 3600_000).toISOString(), created_at: new Date().toISOString() },
 ]
 
-const MOCK_HEARTS = { id: 'h-001', user_id: 'demo-user-001', remaining: 8, daily_limit: 10, last_reset: new Date().toISOString() }
+const MOCK_HEARTS = { id: 'h-001', user_id: 'demo-user-001', remaining: 8, daily_limit: 20, last_reset: new Date().toISOString() }
+
+const today = new Date().toISOString().slice(0, 10)
+const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10)
+const in2days = new Date(Date.now() + 2 * 86400000).toISOString().slice(0, 10)
+const in5days = new Date(Date.now() + 5 * 86400000).toISOString().slice(0, 10)
+const in10days = new Date(Date.now() + 10 * 86400000).toISOString().slice(0, 10)
+
+const MOCK_MILESTONES = [
+  { id: 'ms-001', project_id: 'proj-001', title: 'Homepage launch', description: 'Ship the redesigned homepage', target_date: in10days, status: 'in_progress', created_by: 'demo-user-001', created_at: '2026-05-01T08:00:00Z', updated_at: '2026-05-01T08:00:00Z' },
+  { id: 'ms-002', project_id: 'proj-001', title: 'Content migration', description: null, target_date: in5days, status: 'open', created_by: 'demo-user-001', created_at: '2026-05-10T08:00:00Z', updated_at: '2026-05-10T08:00:00Z' },
+  { id: 'ms-003', project_id: 'proj-002', title: 'Module 1 release', description: 'AI Fundamentals module ready for faculty', target_date: in2days, status: 'in_progress', created_by: 'demo-user-002', created_at: '2026-05-15T08:00:00Z', updated_at: '2026-05-15T08:00:00Z' },
+  { id: 'ms-004', project_id: 'proj-003', title: 'Beta launch', description: null, target_date: in5days, status: 'open', created_by: 'demo-user-001', created_at: '2026-05-20T08:00:00Z', updated_at: '2026-05-20T08:00:00Z' },
+]
+
+const MOCK_TASKS = [
+  { id: 'task-001', project_id: 'proj-001', milestone_id: 'ms-001', title: 'Finalize hero section design', description: 'Update hero per feedback', assignee_id: 'demo-user-001', due_date: today, priority: 'high', status: 'in_progress', created_by: 'demo-user-001', created_at: '2026-05-20T08:00:00Z', updated_at: '2026-05-20T08:00:00Z' },
+  { id: 'task-002', project_id: 'proj-001', milestone_id: 'ms-001', title: 'Write homepage copy', description: null, assignee_id: 'demo-user-002', due_date: yesterday, priority: 'high', status: 'in_progress', created_by: 'demo-user-001', created_at: '2026-05-21T08:00:00Z', updated_at: '2026-05-21T08:00:00Z' },
+  { id: 'task-003', project_id: 'proj-001', milestone_id: 'ms-002', title: 'Export legacy content', description: null, assignee_id: 'demo-user-003', due_date: in5days, priority: 'medium', status: 'not_started', created_by: 'demo-user-001', created_at: '2026-05-22T08:00:00Z', updated_at: '2026-05-22T08:00:00Z' },
+  { id: 'task-004', project_id: 'proj-001', milestone_id: null, title: 'SEO meta tag audit', description: null, assignee_id: 'demo-user-001', due_date: in2days, priority: 'low', status: 'not_started', created_by: 'demo-user-001', created_at: '2026-05-23T08:00:00Z', updated_at: '2026-05-23T08:00:00Z' },
+  { id: 'task-005', project_id: 'proj-002', milestone_id: 'ms-003', title: 'Record Module 1 voiceover', description: null, assignee_id: 'demo-user-004', due_date: in2days, priority: 'high', status: 'not_started', created_by: 'demo-user-002', created_at: '2026-05-24T08:00:00Z', updated_at: '2026-05-24T08:00:00Z' },
+  { id: 'task-006', project_id: 'proj-002', milestone_id: 'ms-003', title: 'Review Module 1 script', description: null, assignee_id: 'demo-user-001', due_date: yesterday, priority: 'high', status: 'in_progress', created_by: 'demo-user-002', created_at: '2026-05-24T09:00:00Z', updated_at: '2026-05-24T09:00:00Z' },
+  { id: 'task-007', project_id: 'proj-003', milestone_id: 'ms-004', title: 'Set up monitoring alerts', description: null, assignee_id: 'demo-user-001', due_date: in5days, priority: 'medium', status: 'not_started', created_by: 'demo-user-001', created_at: '2026-05-25T08:00:00Z', updated_at: '2026-05-25T08:00:00Z' },
+  { id: 'task-008', project_id: 'proj-001', milestone_id: 'ms-001', title: 'Deploy to staging', description: null, assignee_id: 'demo-user-001', due_date: in5days, priority: 'medium', status: 'done', created_by: 'demo-user-001', created_at: '2026-05-25T08:00:00Z', updated_at: '2026-05-25T08:00:00Z' },
+]
+
+const MOCK_SUBTASKS = [
+  { id: 'st-001', task_id: 'task-001', title: 'Create Figma mockup', is_completed: true,  assignee_id: 'demo-user-001', due_date: null, created_by: 'demo-user-001', created_at: '2026-05-20T08:00:00Z' },
+  { id: 'st-002', task_id: 'task-001', title: 'Get approval from lead', is_completed: false, assignee_id: 'demo-user-001', due_date: null, created_by: 'demo-user-001', created_at: '2026-05-20T08:00:00Z' },
+  { id: 'st-003', task_id: 'task-005', title: 'Book recording studio', is_completed: false, assignee_id: 'demo-user-004', due_date: null, created_by: 'demo-user-002', created_at: '2026-05-24T08:00:00Z' },
+]
+
+const MOCK_NOTIFICATIONS: Row[] = [
+  { id: 'notif-001', user_id: 'demo-user-001', type: 'task_assigned', payload: { task_title: 'Finalize hero section design', project_id: 'proj-001' }, is_read: false, created_at: new Date(Date.now() - 3600000).toISOString() },
+  { id: 'notif-002', user_id: 'demo-user-001', type: 'milestone_due',  payload: { milestone_title: 'Module 1 release', project_id: 'proj-002' },         is_read: false, created_at: new Date(Date.now() - 7200000).toISOString() },
+  { id: 'notif-003', user_id: 'demo-user-001', type: 'task_overdue',   payload: { task_title: 'Write homepage copy', project_id: 'proj-001' },            is_read: true,  created_at: new Date(Date.now() - 86400000).toISOString() },
+]
+
+const MOCK_TASK_COMMENTS: Row[] = []
+const MOCK_ACTIVITY_FEED: Row[] = []
 
 // ─── Minimal chainable query builder ─────────────────────────────────────────
 
@@ -82,6 +121,37 @@ function makeQueryBuilder(initialRows: Row[]) {
     },
     in(col: string, vals: unknown[]) {
       rows = rows.filter(r => vals.includes(r[col]))
+      return builder
+    },
+    not(col: string, op: string, val: unknown) {
+      if (op === 'in') {
+        // val is like '(done,cancelled)' — parse the CSV list
+        const list = String(val).replace(/^\(|\)$/g, '').split(',').map(s => s.trim())
+        rows = rows.filter(r => !list.includes(String(r[col] ?? '')))
+      } else {
+        rows = rows.filter(r => r[col] !== val)
+      }
+      return builder
+    },
+    lte(col: string, val: unknown) {
+      rows = rows.filter(r => r[col] != null && r[col]! <= (val as string | number))
+      return builder
+    },
+    gte(col: string, val: unknown) {
+      rows = rows.filter(r => r[col] != null && r[col]! >= (val as string | number))
+      return builder
+    },
+    lt(col: string, val: unknown) {
+      rows = rows.filter(r => r[col] != null && r[col]! < (val as string | number))
+      return builder
+    },
+    gt(col: string, val: unknown) {
+      rows = rows.filter(r => r[col] != null && r[col]! > (val as string | number))
+      return builder
+    },
+    ilike(col: string, pattern: string) {
+      const q = pattern.replace(/%/g, '').toLowerCase()
+      rows = rows.filter(r => String(r[col] ?? '').toLowerCase().includes(q))
       return builder
     },
     order(col: string, opts?: { ascending?: boolean }) {
@@ -130,6 +200,12 @@ function getTableRows(table: string): Row[] {
     case 'progress_logs':   return MOCK_PROGRESS_LOGS   as unknown as Row[]
     case 'invites':         return MOCK_INVITES         as unknown as Row[]
     case 'hearts':          return [MOCK_HEARTS]        as unknown as Row[]
+    case 'milestones':      return MOCK_MILESTONES      as unknown as Row[]
+    case 'tasks':           return MOCK_TASKS           as unknown as Row[]
+    case 'subtasks':        return MOCK_SUBTASKS        as unknown as Row[]
+    case 'notifications':   return MOCK_NOTIFICATIONS
+    case 'task_comments':   return MOCK_TASK_COMMENTS
+    case 'activity_feed':   return MOCK_ACTIVITY_FEED
     case 'ai_audit_log':    return []
     default:                return []
   }
