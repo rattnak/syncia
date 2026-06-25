@@ -7,8 +7,10 @@ import { addTeamsChannelMember } from '@/lib/graph/client'
 // POST /api/invites/[token]  body: { action: 'accept' | 'decline' }
 export async function POST(
   req: NextRequest,
-  { params }: { params: { token: string } }
+  { params }: { params: Promise<{ token: string }> }
 ) {
+  const { token } = await params
+
   // Demo mode: always succeed
   if (process.env.DEMO_MODE === 'true') {
     const { action } = await req.json()
@@ -28,7 +30,7 @@ export async function POST(
   const { data: invite } = await supabase
     .from('invites')
     .select('id, status, invited_email, expires_at, project_id')
-    .eq('token', params.token)
+    .eq('token', token)
     .single()
 
   if (!invite) return NextResponse.json({ error: 'Invite not found.' }, { status: 404 })
@@ -51,7 +53,6 @@ export async function POST(
   if (inviteErr) return NextResponse.json({ error: inviteErr.message }, { status: 500 })
 
   if (action === 'accept') {
-    // Check for existing membership (prevent duplicates)
     const { data: existing } = await supabase
       .from('project_members')
       .select('id, status')
@@ -79,10 +80,6 @@ export async function POST(
         .eq('id', existing.id)
     }
 
-    // Add the new member to the Teams channel if one exists for this project.
-    // Uses the accepting user's delegated token — they're adding themselves.
-    // aadObjectId comes from their NextAuth JWT (populated from the AAD `oid` claim).
-    // Non-blocking: Teams failure must not prevent the invite from being accepted.
     if (process.env.GRAPH_TEAM_ID) {
       try {
         const { data: projectRow } = await supabase

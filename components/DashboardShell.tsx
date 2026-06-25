@@ -13,7 +13,10 @@ import SearchBar from '@/components/SearchBar'
 
 // ── Hearts badge ──────────────────────────────────────────────────────────────
 function HeartBadge() {
-  const [hearts, setHearts] = useState<{ remaining: number; daily_limit: number } | null>(null)
+  const [hearts, setHearts] = useState<{ remaining: number; daily_limit: number; last_reset: string } | null>(null)
+  const [open, setOpen] = useState(false)
+  const [requested, setRequested] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     fetch('/api/hearts')
@@ -22,21 +25,89 @@ function HeartBadge() {
       .catch(() => {})
   }, [])
 
+  useEffect(() => {
+    function onClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', onClick)
+    return () => document.removeEventListener('mousedown', onClick)
+  }, [])
+
   if (!hearts) return null
 
   const pct = hearts.remaining / hearts.daily_limit
   const color = pct > 0.5 ? 'text-rose-500' : pct > 0.2 ? 'text-orange-500' : 'text-red-600'
 
+  // Calculate next reset (midnight UTC after last_reset)
+  const lastReset = new Date(hearts.last_reset)
+  const nextReset = new Date(lastReset)
+  nextReset.setUTCDate(nextReset.getUTCDate() + 1)
+  nextReset.setUTCHours(0, 0, 0, 0)
+  const msUntil = nextReset.getTime() - Date.now()
+  const hoursUntil = Math.floor(msUntil / 3600000)
+  const minsUntil = Math.floor((msUntil % 3600000) / 60000)
+  const resetLabel = msUntil <= 0
+    ? 'Reset imminent'
+    : hoursUntil > 0
+      ? `Resets in ${hoursUntil}h ${minsUntil}m`
+      : `Resets in ${minsUntil}m`
+
   return (
-    <span
-      className={`flex items-center gap-1 text-xs font-medium ${color}`}
-      title={`${hearts.remaining} of ${hearts.daily_limit} AI queries remaining today`}
-    >
-      <svg className="h-4 w-4 fill-current shrink-0" viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-      </svg>
-      <span>{hearts.remaining}/{hearts.daily_limit}</span>
-    </span>
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className={`flex items-center gap-1 text-xs font-medium rounded-lg px-2 py-1.5 hover:bg-gray-100 transition-colors ${color}`}
+        aria-label="AI query credits"
+      >
+        <svg className="h-4 w-4 fill-current shrink-0" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+        </svg>
+        <span>{hearts.remaining}/{hearts.daily_limit}</span>
+      </button>
+
+      {open && (
+        <div className="absolute right-0 top-full mt-2 w-64 rounded-xl border border-gray-200 bg-white shadow-lg z-50 p-4 flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-semibold text-gray-900">AI Query Credits</span>
+            <button onClick={() => setOpen(false)} className="text-gray-400 hover:text-gray-600">
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+
+          {/* Usage bar */}
+          <div>
+            <div className="flex justify-between text-xs text-gray-500 mb-1">
+              <span>{hearts.remaining} remaining</span>
+              <span>{hearts.daily_limit} daily limit</span>
+            </div>
+            <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all ${pct > 0.5 ? 'bg-rose-400' : pct > 0.2 ? 'bg-orange-400' : 'bg-red-500'}`}
+                style={{ width: `${Math.max(pct * 100, 2)}%` }}
+              />
+            </div>
+          </div>
+
+          <p className="text-xs text-gray-500">{resetLabel} (midnight UTC)</p>
+
+          {requested ? (
+            <div className="rounded-lg bg-green-50 border border-green-200 px-3 py-2 text-xs text-green-700 font-medium text-center">
+              Request sent! We&apos;ll review it soon.
+            </div>
+          ) : (
+            <button
+              onClick={() => {
+                window.location.href = `mailto:syncia-support@fhsu.edu?subject=Request%20for%20additional%20AI%20credits&body=Hi%2C%20I%27d%20like%20to%20request%20additional%20daily%20AI%20query%20credits%20for%20my%20account.`
+                setRequested(true)
+              }}
+              className="w-full rounded-lg bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 text-xs font-medium py-2 transition-colors"
+            >
+              Request more credits
+            </button>
+          )}
+        </div>
+      )}
+    </div>
   )
 }
 

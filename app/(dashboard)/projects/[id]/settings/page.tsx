@@ -1,6 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
-import DashboardShell from '@/components/DashboardShell'
 import ProjectSettingsClient from './ProjectSettingsClient'
 
 export default async function ProjectSettingsPage({ params }: { params: Promise<{ id: string }> }) {
@@ -27,15 +26,10 @@ export default async function ProjectSettingsPage({ params }: { params: Promise<
 
   if (!myMembership) redirect('/dashboard')
 
-  const { data: profile } = await supabase
-    .from('profiles').select('email').eq('id', user.id).single()
-
   return (
-    <DashboardShell email={profile?.email ?? user.email ?? ''}>
-      <ProjectSettingsClient
-        project={project}
-        isLeader={myMembership.role === 'leader'}
-      />
-    </DashboardShell>
+    <ProjectSettingsClient
+      project={project}
+      isLeader={myMembership.role === 'leader'}
+    />
   )
 }

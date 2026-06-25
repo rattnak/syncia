@@ -3,7 +3,8 @@ import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import InviteConsentForm from './InviteConsentForm'
 
-export default async function InvitePage({ params }: { params: { token: string } }) {
+export default async function InvitePage({ params }: { params: Promise<{ token: string }> }) {
+  const { token } = await params
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect(`/login`)
@@ -11,7 +12,7 @@ export default async function InvitePage({ params }: { params: { token: string }
   const { data: invite } = await supabase
     .from('invites')
     .select('id, status, invited_email, expires_at, project_id')
-    .eq('token', params.token)
+    .eq('token', token)
     .single()
 
   if (!invite) notFound()
@@ -111,7 +112,7 @@ export default async function InvitePage({ params }: { params: { token: string }
           </ul>
         </div>
 
-        <InviteConsentForm token={params.token} projectId={invite.project_id} />
+        <InviteConsentForm token={token} projectId={invite.project_id} />
       </div>
     </div>
   )

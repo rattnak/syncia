@@ -12,16 +12,20 @@ export async function GET() {
     .eq('user_id', user.id)
     .single()
 
-  // If no hearts row yet, auto-create and return default
   if (!hearts) {
+    const now = new Date().toISOString()
     await supabase.from('hearts').insert({
       user_id: user.id,
-      remaining: 10,
-      daily_limit: 10,
-      last_reset: new Date().toISOString(),
+      remaining: 20,
+      daily_limit: 20,
+      last_reset: now,
     })
-    return NextResponse.json({ remaining: 10, daily_limit: 10 })
+    return NextResponse.json({ remaining: 20, daily_limit: 20, last_reset: now })
   }
 
-  return NextResponse.json({ remaining: hearts.remaining, daily_limit: hearts.daily_limit })
+  return NextResponse.json({
+    remaining: hearts.remaining,
+    daily_limit: hearts.daily_limit,
+    last_reset: hearts.last_reset,
+  })
 }

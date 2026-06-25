@@ -4,8 +4,9 @@ import { createClient } from '@/lib/supabase/server'
 // PATCH /api/projects/[id]  — edit name/description (leaders only)
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -13,7 +14,7 @@ export async function PATCH(
   const { data: membership } = await supabase
     .from('project_members')
     .select('role')
-    .eq('project_id', params.id)
+    .eq('project_id', id)
     .eq('user_id', user.id)
     .eq('status', 'active')
     .single()
@@ -34,19 +35,18 @@ export async function PATCH(
   const { error } = await supabase
     .from('projects')
     .update(updates)
-    .eq('id', params.id)
+    .eq('id', id)
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json({ success: true, updates })
 }
 
-// DELETE /api/projects/[id]  body: { action: 'leave' }
-// Leaders can leave if there is at least one other active leader.
-// Regular members can always leave.
+// DELETE /api/projects/[id]  body: { action: 'leave' | 'delete' }
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -59,19 +59,20 @@ export async function DELETE(
   if (action === 'delete') {
     const { data: myMembership } = await supabase
       .from('project_members').select('role')
-      .eq('project_id', params.id).eq('user_id', user.id).eq('status', 'active').single()
+      .eq('project_id', id).eq('user_id', user.id).eq('status', 'active').single()
     if (!myMembership || myMembership.role !== 'leader') {
       return NextResponse.json({ error: 'Only a leader can delete the project.' }, { status: 403 })
     }
-    const { error } = await supabase.from('projects').delete().eq('id', params.id)
+    const { error } = await supabase.from('projects').delete().eq('id', id)
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
     return NextResponse.json({ success: true })
   }
 
+  // action === 'leave'
   const { data: myMembership } = await supabase
     .from('project_members')
     .select('id, role')
-    .eq('project_id', params.id)
+    .eq('project_id', id)
     .eq('user_id', user.id)
     .eq('status', 'active')
     .single()
@@ -84,7 +85,7 @@ export async function DELETE(
     const { data: leaders } = await supabase
       .from('project_members')
       .select('user_id')
-      .eq('project_id', params.id)
+      .eq('project_id', id)
       .eq('role', 'leader')
       .eq('status', 'active')
 
