@@ -127,7 +127,7 @@ export default async function BriefingPage() {
   }
 
   return (
-    <div className="max-w-3xl">
+    <div className="max-w-3xl w-full">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900">Daily Briefing</h1>
         <p className="text-gray-500 text-sm mt-1">{todayDisplay}</p>

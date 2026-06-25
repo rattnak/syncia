@@ -58,7 +58,7 @@ export default function SearchBar() {
 
   return (
     <div ref={ref} className="relative">
-      <div className="flex items-center gap-2 bg-gray-100 rounded-lg px-3 py-1.5 w-52 focus-within:ring-2 focus-within:ring-blue-400 transition">
+      <div className="flex items-center gap-2 bg-gray-100 rounded-lg px-3 py-1.5 w-44 lg:w-56 focus-within:ring-2 focus-within:ring-blue-400 transition">
         <svg className="h-3.5 w-3.5 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
         </svg>

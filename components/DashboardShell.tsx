@@ -43,14 +43,14 @@ function NavLink({ href, label, icon }: { href: string; label: string; icon: Rea
   return (
     <Link
       href={href}
-      className={`flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg transition ${
+      className={`flex items-center gap-1.5 text-sm font-medium px-2.5 py-1.5 rounded-lg transition ${
         active
           ? 'bg-blue-50 text-blue-700'
           : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
       }`}
     >
       {icon}
-      {label}
+      <span className="hidden sm:inline">{label}</span>
     </Link>
   )
 }
@@ -154,15 +154,15 @@ export default function DashboardShell({ email, children, isDemo }: DashboardShe
       )}
 
       {/* Top nav */}
-      <header className="bg-white border-b border-gray-200 px-4 py-2.5 flex items-center justify-between sticky top-0 z-30">
-        <div className="flex items-center gap-5">
+      <header className="bg-white border-b border-gray-200 px-4 py-2.5 flex items-center justify-between sticky top-0 z-30 gap-2">
+        <div className="flex items-center gap-3 min-w-0">
           {/* Wordmark */}
           <Link href="/dashboard" className="flex items-center gap-2 shrink-0">
             <div className="h-7 w-7 rounded-lg bg-blue-600 flex items-center justify-center text-white text-xs font-bold tracking-tight">S</div>
-            <span className="text-sm font-semibold text-gray-900">Syncia</span>
+            <span className="hidden sm:block text-sm font-semibold text-gray-900">Syncia</span>
           </Link>
 
-          {/* Nav */}
+          {/* Nav — icon-only on mobile, label on sm+ */}
           <nav className="flex items-center gap-0.5">
             <NavLink href="/dashboard" label="Projects" icon={<DashboardIcon />} />
             <NavLink href="/briefing"  label="Briefing"  icon={<BriefingIcon />} />
@@ -170,8 +170,10 @@ export default function DashboardShell({ email, children, isDemo }: DashboardShe
           </nav>
         </div>
 
-        <div className="flex items-center gap-3">
-          <SearchBar />
+        <div className="flex items-center gap-2 shrink-0">
+          <div className="hidden md:block">
+            <SearchBar />
+          </div>
           <HeartBadge />
           <NotificationBell />
           <UserMenu email={email} isDemo={isDemo} onSignOut={handleSignOut} />
@@ -179,7 +181,7 @@ export default function DashboardShell({ email, children, isDemo }: DashboardShe
       </header>
 
       {/* Page content */}
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         {children}
       </main>
     </div>

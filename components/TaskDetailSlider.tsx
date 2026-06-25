@@ -196,7 +196,7 @@ export default function TaskDetailSlider({ task, initialSubtasks, members, onClo
       <div className="fixed inset-0 bg-black/20 z-40" onClick={onClose} />
 
       {/* Slider panel */}
-      <div className="fixed inset-y-0 right-0 w-full max-w-md bg-white shadow-2xl z-50 flex flex-col overflow-hidden">
+      <div className="fixed inset-y-0 right-0 w-full sm:max-w-md bg-white shadow-2xl z-50 flex flex-col overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
           <h2 className="font-semibold text-gray-800 text-sm">Task detail</h2>

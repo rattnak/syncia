@@ -266,7 +266,7 @@ export default function MilestoneBoard({ projectId, initialMilestones, initialTa
       </div>
 
       {/* Filter bar */}
-      <div className="px-5 py-2.5 border-b border-gray-100 flex flex-wrap items-center gap-2">
+      <div className="px-4 py-2.5 border-b border-gray-100 flex items-center gap-2 overflow-x-auto scrollbar-none">
         <span className="text-xs text-gray-400 mr-1">Filter:</span>
         <select
           value={filterAssignee}
@@ -499,14 +499,14 @@ export default function MilestoneBoard({ projectId, initialMilestones, initialTa
                             {task.title}
                           </span>
 
-                          {/* Priority badge */}
-                          <span className={`text-xs px-1.5 py-0.5 rounded font-medium shrink-0 ${pm.bg} ${pm.text}`}>
+                          {/* Priority badge — hidden on xs */}
+                          <span className={`hidden sm:inline text-xs px-1.5 py-0.5 rounded font-medium shrink-0 ${pm.bg} ${pm.text}`}>
                             {pm.label}
                           </span>
 
-                          {/* Due date */}
+                          {/* Due date — hidden on xs */}
                           {task.due_date && (
-                            <span className={`text-xs shrink-0 ${dueDateClass(task.due_date)}`}>
+                            <span className={`hidden sm:inline text-xs shrink-0 ${dueDateClass(task.due_date)}`}>
                               {formatDate(task.due_date)}
                             </span>
                           )}
