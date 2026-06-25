@@ -1,5 +1,6 @@
 'use client'
 
+import { signIn } from 'next-auth/react'
 import { useSearchParams } from 'next/navigation'
 import { Suspense, useEffect, useState } from 'react'
 
@@ -16,17 +17,20 @@ const errorMessage: Record<string, string> = {
 function LoginForm() {
   const searchParams = useSearchParams()
   const error = searchParams.get('error')
-  const [csrfToken, setCsrfToken] = useState('')
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    // Clear demo cookie
     document.cookie = 'syncia-demo=; path=/; max-age=0'
-    // Fetch CSRF token required by NextAuth v4 for POST-based OAuth initiation
-    fetch('/api/auth/csrf')
-      .then((r) => r.json())
-      .then((d) => setCsrfToken(d.csrfToken ?? ''))
-      .catch(() => {})
   }, [])
+
+  async function handleSignIn() {
+    setLoading(true)
+    try {
+      await signIn('azure-ad', { callbackUrl: '/dashboard' })
+    } catch {
+      setLoading(false)
+    }
+  }
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -48,23 +52,14 @@ function LoginForm() {
           </div>
         )}
 
-        {/* NextAuth v4 requires a form POST with csrfToken to initiate OAuth */}
-        <form
-          action="/api/auth/signin/azure-ad"
-          method="POST"
-          className="w-full"
+        <button
+          onClick={handleSignIn}
+          disabled={loading}
+          className="w-full flex items-center justify-center gap-3 bg-[#0078d4] hover:bg-[#106ebe] disabled:bg-[#0078d4]/60 text-white font-medium py-2.5 px-4 rounded-lg transition"
         >
-          <input type="hidden" name="csrfToken" value={csrfToken} />
-          <input type="hidden" name="callbackUrl" value="/dashboard" />
-          <button
-            type="submit"
-            disabled={!csrfToken}
-            className="w-full flex items-center justify-center gap-3 bg-[#0078d4] hover:bg-[#106ebe] disabled:bg-[#0078d4]/60 text-white font-medium py-2.5 px-4 rounded-lg transition"
-          >
-            <MicrosoftIcon />
-            {csrfToken ? 'Sign in with Microsoft' : 'Loading…'}
-          </button>
-        </form>
+          <MicrosoftIcon />
+          {loading ? 'Redirecting to Microsoft…' : 'Sign in with Microsoft'}
+        </button>
 
         <div className="w-full flex items-center gap-3">
           <div className="flex-1 h-px bg-gray-200" />
