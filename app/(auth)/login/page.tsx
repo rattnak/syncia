@@ -1,30 +1,24 @@
 'use client'
 
-import { signIn } from 'next-auth/react'
 import { useSearchParams } from 'next/navigation'
-import { Suspense, useState } from 'react'
+import { Suspense } from 'react'
+
+const errorMessage: Record<string, string> = {
+  OAuthSignin:        'Could not start Microsoft sign-in.',
+  OAuthCallback:      'Microsoft returned an error during sign-in.',
+  OAuthCreateAccount: 'Could not create your account.',
+  Callback:           'Sign-in callback failed.',
+  AccessDenied:       'Access denied — sign in with an @fhsu.edu Microsoft account.',
+  Verification:       'Verification failed.',
+  Default:            'An unexpected error occurred during sign-in.',
+}
 
 function LoginForm() {
-  const [loading, setLoading] = useState(false)
   const searchParams = useSearchParams()
   const error = searchParams.get('error')
 
-  const errorMessage: Record<string, string> = {
-    OAuthSignin:    'Could not start Microsoft sign-in. Check that the app is configured correctly.',
-    OAuthCallback:  'Microsoft returned an error during sign-in.',
-    OAuthCreateAccount: 'Could not create your account.',
-    Callback:       'Sign-in callback failed.',
-    AccessDenied:   'Access denied. Make sure you are signing in with an @fhsu.edu Microsoft account.',
-    Verification:   'Verification failed.',
-    Default:        'An unexpected error occurred during sign-in.',
-  }
-
-  async function handleSSO() {
-    setLoading(true)
-    await fetch('/api/auth/exit-demo').catch(() => {})
-    document.cookie = 'syncia-demo=; path=/; max-age=0'
-    await signIn('azure-ad', { callbackUrl: '/dashboard' })
-  }
+  // Direct link to NextAuth's Azure AD sign-in — no JS required, no race conditions
+  const signInUrl = '/api/auth/signin/azure-ad?callbackUrl=%2Fdashboard'
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -42,18 +36,18 @@ function LoginForm() {
             <p className="text-xs text-red-600 mt-0.5">
               {errorMessage[error] ?? errorMessage.Default}
             </p>
-            <p className="text-xs text-red-400 mt-1">Error code: {error}</p>
+            <p className="text-xs text-red-400 mt-1">Code: {error}</p>
           </div>
         )}
 
-        <button
-          onClick={handleSSO}
-          disabled={loading}
-          className="w-full flex items-center justify-center gap-3 bg-[#0078d4] hover:bg-[#106ebe] disabled:bg-[#0078d4]/60 text-white font-medium py-2.5 px-4 rounded-lg transition"
+        <a
+          href={signInUrl}
+          onClick={() => { document.cookie = 'syncia-demo=; path=/; max-age=0' }}
+          className="w-full flex items-center justify-center gap-3 bg-[#0078d4] hover:bg-[#106ebe] text-white font-medium py-2.5 px-4 rounded-lg transition"
         >
           <MicrosoftIcon />
-          {loading ? 'Redirecting…' : 'Sign in with Microsoft'}
-        </button>
+          Sign in with Microsoft
+        </a>
 
         <div className="w-full flex items-center gap-3">
           <div className="flex-1 h-px bg-gray-200" />
