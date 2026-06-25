@@ -133,12 +133,6 @@ const SupervisorIcon = () => (
   </svg>
 )
 
-const BellIcon = () => (
-  <svg className="h-5 w-5 shrink-0" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" aria-hidden="true">
-    <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" />
-    <path d="M13.73 21a2 2 0 01-3.46 0" />
-  </svg>
-)
 
 const ChevronDownIcon = () => (
   <svg className="h-4 w-4 shrink-0 text-gray-400" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" aria-hidden="true">
@@ -236,9 +230,7 @@ function UserMenu({ email, isDemo, onSignOut }: { email: string; isDemo?: boolea
   )
 }
 
-// ── Notification bell — uses shared BellIcon ───────────────────────────────────
 // Kept in NotificationBell.tsx but we pass the icon via the slot pattern there.
-// DashboardShell exports BellIcon so NotificationBell can import it.
 
 // ── Shell ─────────────────────────────────────────────────────────────────────
 interface DashboardShellProps {
