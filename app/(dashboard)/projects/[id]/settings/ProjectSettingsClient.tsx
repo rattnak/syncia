@@ -128,38 +128,44 @@ export default function ProjectSettingsClient({ project, isLeader }: Props) {
         <h2 className="text-sm font-semibold text-red-700">Danger zone</h2>
 
         {/* Leave */}
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="text-sm font-medium text-gray-700">Leave project</p>
-            <p className="text-xs text-gray-400 mt-0.5">You will lose access to this project&apos;s tasks and logs.</p>
+        <div className="space-y-3">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-sm font-medium text-gray-800">Leave project</p>
+              <p className="text-xs text-gray-400 mt-0.5">You will lose access to this project&apos;s tasks and logs.</p>
+            </div>
+            {!leaveConfirm && (
+              <button
+                onClick={() => setLeaveConfirm(true)}
+                className="shrink-0 text-sm font-medium text-red-600 border border-red-200 bg-red-50 hover:bg-red-100 px-4 py-1.5 rounded-lg transition"
+              >
+                Leave
+              </button>
+            )}
           </div>
-          {!leaveConfirm ? (
-            <button
-              onClick={() => setLeaveConfirm(true)}
-              className="shrink-0 border border-red-300 text-red-600 text-sm font-medium px-4 py-2 rounded-lg hover:bg-red-50 transition"
-            >
-              Leave
-            </button>
-          ) : (
-            <div className="flex items-center gap-2 shrink-0">
-              <span className="text-xs text-gray-500">Sure?</span>
-              <button
-                onClick={leaveProject}
-                disabled={leaving}
-                className="bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white text-sm font-medium px-3 py-1.5 rounded-lg transition"
-              >
-                {leaving ? 'Leaving…' : 'Yes, leave'}
-              </button>
-              <button
-                onClick={() => setLeaveConfirm(false)}
-                className="text-sm text-gray-400 hover:text-gray-600 px-2 py-1.5"
-              >
-                Cancel
-              </button>
+          {leaveConfirm && (
+            <div className="rounded-lg border border-red-200 bg-red-50 p-4 space-y-3">
+              <p className="text-sm text-red-800 font-medium">Are you sure you want to leave?</p>
+              <p className="text-xs text-red-600">You will need a new invite to rejoin.</p>
+              <div className="flex gap-2">
+                <button
+                  onClick={leaveProject}
+                  disabled={leaving}
+                  className="bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white text-sm font-medium px-4 py-1.5 rounded-lg transition"
+                >
+                  {leaving ? 'Leaving…' : 'Yes, leave project'}
+                </button>
+                <button
+                  onClick={() => setLeaveConfirm(false)}
+                  className="text-sm text-gray-500 hover:text-gray-700 border border-gray-200 bg-white px-4 py-1.5 rounded-lg transition"
+                >
+                  Cancel
+                </button>
+              </div>
+              {leaveError && <p className="text-xs text-red-600">{leaveError}</p>}
             </div>
           )}
         </div>
-        {leaveError && <p className="text-xs text-red-500">{leaveError}</p>}
 
         {/* Delete — leaders only */}
         {isLeader && (
