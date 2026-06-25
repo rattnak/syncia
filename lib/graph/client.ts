@@ -27,9 +27,9 @@ const GRAPH_BASE = 'https://graph.microsoft.com/v1.0'
 
 // ─── GRAPH FETCH HELPERS ──────────────────────────────────────────────────────
 
-async function graphGet(path: string, accessToken: string) {
+async function graphGet(path: string, accessToken: string, extraHeaders: Record<string, string> = {}) {
   const res = await fetch(`${GRAPH_BASE}${path}`, {
-    headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+    headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json', ...extraHeaders },
   })
   if (!res.ok) throw new Error(`Graph GET ${path} failed: ${res.status}`)
   return res.json()
@@ -149,29 +149,40 @@ export async function getUserCalendarEvents(
   attendeeEmails: string[]
   onlineMeetingUrl?: string
 }>> {
-  const now = new Date().toISOString()
-  const end = new Date(Date.now() + daysAhead * 24 * 60 * 60 * 1000).toISOString()
+  // Start from beginning of today (UTC) so we don't miss morning events
+  const startOfToday = new Date()
+  startOfToday.setUTCHours(0, 0, 0, 0)
+  const startDateTime = startOfToday.toISOString()
+  const endDateTime = new Date(startOfToday.getTime() + daysAhead * 24 * 60 * 60 * 1000).toISOString()
 
+  // calendarView returns events in the user's mailbox timezone — request UTC via Prefer header
   const data = await graphGet(
-    `/me/calendarView?startDateTime=${now}&endDateTime=${end}&$select=id,subject,start,end,attendees,onlineMeetingUrl&$orderby=start/dateTime&$top=50`,
-    accessToken
+    `/me/calendarView?startDateTime=${startDateTime}&endDateTime=${endDateTime}&$select=id,subject,start,end,attendees,onlineMeetingUrl&$top=50`,
+    accessToken,
+    { 'Prefer': 'outlook.timezone="UTC"' }
   )
 
   return (data.value ?? []).map((e: {
     id: string
     subject?: string
-    start?: { dateTime?: string }
-    end?: { dateTime?: string }
+    start?: { dateTime?: string; timeZone?: string }
+    end?: { dateTime?: string; timeZone?: string }
     attendees?: Array<{ emailAddress?: { address?: string } }>
     onlineMeetingUrl?: string
-  }) => ({
-    id: e.id,
-    subject: e.subject ?? '(No subject)',
-    start: e.start?.dateTime ?? '',
-    end: e.end?.dateTime ?? '',
-    attendeeEmails: (e.attendees ?? []).map((a) => a.emailAddress?.address ?? '').filter(Boolean),
-    onlineMeetingUrl: e.onlineMeetingUrl,
-  }))
+  }) => {
+    // Graph returns dateTime without Z when using Prefer UTC — add it explicitly
+    const startRaw = e.start?.dateTime ?? ''
+    const endRaw = e.end?.dateTime ?? ''
+    const toISO = (dt: string) => dt.endsWith('Z') ? dt : dt + 'Z'
+    return {
+      id: e.id,
+      subject: e.subject ?? '(No subject)',
+      start: toISO(startRaw),
+      end: toISO(endRaw),
+      attendeeEmails: (e.attendees ?? []).map((a) => a.emailAddress?.address ?? '').filter(Boolean),
+      onlineMeetingUrl: e.onlineMeetingUrl,
+    }
+  })
 }
 
 /**

@@ -20,13 +20,13 @@ export default function CalendarBriefing() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    fetch('/api/calendar/events?days=1')
+    fetch('/api/calendar/events?days=7')
       .then((r) => r.json())
       .then((d) => {
         if (d.error) setError(d.error)
         else setEvents(d.events ?? [])
       })
-      .catch(() => setError('Could not load calendar. Ensure Microsoft Calendar access is configured.'))
+      .catch(() => setError('Could not load calendar.'))
       .finally(() => setLoading(false))
   }, [])
 
@@ -54,7 +54,7 @@ export default function CalendarBriefing() {
   if (events.length === 0) {
     return (
       <div className="bg-white rounded-xl border border-gray-100 p-5 text-sm text-gray-400 text-center">
-        No meetings scheduled for today.
+        No meetings in the next 7 days.
       </div>
     )
   }
@@ -63,31 +63,56 @@ export default function CalendarBriefing() {
     return new Date(iso).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })
   }
 
+  function dayLabel(iso: string) {
+    const d = new Date(iso)
+    const today = new Date(); today.setHours(0,0,0,0)
+    const tomorrow = new Date(today); tomorrow.setDate(today.getDate() + 1)
+    const eventDay = new Date(d); eventDay.setHours(0,0,0,0)
+    if (eventDay.getTime() === today.getTime()) return 'Today'
+    if (eventDay.getTime() === tomorrow.getTime()) return 'Tomorrow'
+    return d.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' })
+  }
+
+  // Group events by day label
+  const grouped: Record<string, CalendarEvent[]> = {}
+  for (const event of events) {
+    const label = dayLabel(event.start)
+    if (!grouped[label]) grouped[label] = []
+    grouped[label].push(event)
+  }
+
   return (
-    <div className="flex flex-col gap-3">
-      {events.map((event) => (
-        <div key={event.id} className="bg-white rounded-xl border border-gray-200 p-4 flex items-start gap-4">
-          <div className="text-xs text-gray-500 shrink-0 pt-0.5 w-20 text-right">
-            <p>{formatTime(event.start)}</p>
-            <p className="text-gray-300">→ {formatTime(event.end)}</p>
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-gray-900">{event.subject}</p>
-            {event.projectName && (
-              <span className="inline-block mt-1 text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full">
-                {event.projectName}
-              </span>
-            )}
-            {(event.onlineMeetingUrl ?? event.joinUrl) && (
-              <a
-                href={(event.onlineMeetingUrl ?? event.joinUrl)!}
-                target="_blank"
-                rel="noreferrer"
-                className="block mt-1.5 text-xs text-blue-600 hover:underline"
-              >
-                Join Teams meeting
-              </a>
-            )}
+    <div className="flex flex-col gap-5">
+      {Object.entries(grouped).map(([day, dayEvents]) => (
+        <div key={day}>
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">{day}</p>
+          <div className="flex flex-col gap-2">
+            {dayEvents.map((event) => (
+              <div key={event.id} className="bg-white rounded-xl border border-gray-200 p-4 flex items-start gap-4">
+                <div className="text-xs text-gray-400 shrink-0 pt-0.5 w-20 text-right leading-relaxed">
+                  <p className="font-medium text-gray-600">{formatTime(event.start)}</p>
+                  <p>→ {formatTime(event.end)}</p>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-gray-900">{event.subject}</p>
+                  {event.projectName && (
+                    <span className="inline-block mt-1 text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full">
+                      {event.projectName}
+                    </span>
+                  )}
+                  {(event.onlineMeetingUrl ?? event.joinUrl) && (
+                    <a
+                      href={(event.onlineMeetingUrl ?? event.joinUrl)!}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="block mt-1.5 text-xs text-blue-600 hover:underline"
+                    >
+                      Join Teams meeting →
+                    </a>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       ))}
