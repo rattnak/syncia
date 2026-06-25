@@ -15,8 +15,6 @@ async function refreshAccessToken(token: Record<string, unknown>) {
         scope: [
           'openid', 'profile', 'email', 'offline_access',
           'Calendars.Read', 'Calendars.ReadWrite',
-          'Channel.ReadBasic.All', 'Channel.Create',
-          'ChannelMember.ReadWrite.All', 'ChannelMessage.Read.All',
         ].join(' '),
       }),
     })
@@ -41,7 +39,6 @@ export const authOptions: NextAuthOptions = {
       clientId: process.env.AZURE_AD_CLIENT_ID!,
       clientSecret: process.env.AZURE_AD_CLIENT_SECRET!,
       tenantId: process.env.AZURE_AD_TENANT_ID!,
-      // Request delegated Graph scopes for Phase 4 (calendar)
       authorization: {
         params: {
           scope: [
@@ -49,14 +46,8 @@ export const authOptions: NextAuthOptions = {
             'profile',
             'email',
             'offline_access',
-            // Calendar
             'Calendars.Read',
             'Calendars.ReadWrite',
-            // Teams channels (delegated — scoped to channels the user owns/belongs to)
-            'Channel.ReadBasic.All',
-            'Channel.Create',
-            'ChannelMember.ReadWrite.All',
-            'ChannelMessage.Read.All',
           ].join(' '),
         },
       },
@@ -89,8 +80,9 @@ export const authOptions: NextAuthOptions = {
         token.aadObjectId = p.oid
       }
 
-      // Return token as-is if not expired yet (with 60s buffer)
-      if (Date.now() / 1000 < (token.expiresAt as number) - 60) {
+      // No expiry set yet (first sign-in) or token still valid — return as-is
+      const expiresAt = token.expiresAt as number | undefined
+      if (!expiresAt || Date.now() / 1000 < expiresAt - 60) {
         return token
       }
 
