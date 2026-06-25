@@ -10,6 +10,8 @@ import SharingSettings from '@/components/SharingSettings'
 import MeetingScheduler from '@/components/MeetingScheduler'
 import MilestoneBoard from '@/components/MilestoneBoard'
 import TaskDetailSlider from '@/components/TaskDetailSlider'
+import ActivityFeed from '@/components/ActivityFeed'
+import ChannelFeed from '@/components/ChannelFeed'
 
 interface Profile {
   id: string
@@ -349,11 +351,44 @@ export default function ProjectPageClient({
             </div>
           )}
 
+          {/* Activity feed */}
+          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            <div className="px-5 pt-4 pb-3 border-b border-gray-100">
+              <h2 className="font-semibold text-gray-800 text-sm">Activity</h2>
+            </div>
+            <div className="px-5 py-3">
+              <ActivityFeed projectId={project.id} />
+            </div>
+          </div>
+
+          {/* Teams channel feed */}
+          {project.teams_channel_id && (
+            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+              <div className="px-5 pt-4 pb-3 border-b border-gray-100">
+                <h2 className="font-semibold text-gray-800 text-sm">Teams channel</h2>
+                <p className="text-xs text-gray-400 mt-0.5">Recent messages from Microsoft Teams.</p>
+              </div>
+              <div className="px-5 py-3">
+                <ChannelFeed channelId={project.teams_channel_id} />
+              </div>
+            </div>
+          )}
+
           {/* Sharing settings */}
           <SharingSettings projectId={project.id} supervisors={supervisors} />
 
-          {/* Leave project */}
-          <div className="flex justify-center pt-1 pb-2">
+          {/* Settings + Leave */}
+          <div className="flex items-center justify-between pt-1 pb-2 px-1">
+            <Link
+              href={`/projects/${project.id}/settings`}
+              className="text-xs text-gray-400 hover:text-gray-600 transition flex items-center gap-1"
+            >
+              <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              Settings
+            </Link>
             <LeaveProjectButton projectId={project.id} />
           </div>
         </div>

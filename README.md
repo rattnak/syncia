@@ -19,6 +19,12 @@ Syncia gives student project teams a single place to coordinate work from start 
 - **AI assistant** — project-aware chat powered by Claude (all members); reads milestones, tasks, and progress logs; preset quick-actions for common queries; 10-query daily limit (hearts) per user
 - **Supervisor dashboard** — supervisors see progress logs for students who opt in; AI query over shared data
 - **Daily briefing** — personal view of tasks due this week (grouped by urgency), per-project health snapshots, active logs across all projects, and today's calendar
+- **Task comments** — threaded comments on any task; visible to all project members; author can delete their own
+- **Activity feed** — per-project timeline of every create/update/complete/comment event, shown in the project sidebar
+- **Global search** — header search bar across all projects, milestones, and tasks the user can access
+- **Task filtering** — filter MilestoneBoard by assignee, priority, and status with a single-click clear
+- **Teams channel feed** — reads recent Microsoft Teams messages from the project's linked channel
+- **Project settings** — dedicated settings page: rename, update description, leave project, and (leaders) delete project with confirmation
 
 ---
 
@@ -176,6 +182,36 @@ erDiagram
 
   profiles ||--o{ notifications : "user_id"
 
+  %% ── TASK COMMENTS ───────────────────────────────────────────────────────────
+
+  task_comments {
+    uuid id PK
+    uuid task_id FK
+    uuid user_id FK
+    text body
+    timestamptz created_at
+    timestamptz updated_at
+  }
+
+  tasks ||--o{ task_comments : "task_id"
+  profiles ||--o{ task_comments : "user_id"
+
+  %% ── ACTIVITY FEED ───────────────────────────────────────────────────────────
+
+  activity_feed {
+    uuid id PK
+    uuid project_id FK
+    uuid actor_id FK "nullable"
+    text entity_type "task | milestone | progress_log | member | comment"
+    uuid entity_id "nullable"
+    text action "created | updated | completed | deleted | joined | commented"
+    jsonb meta
+    timestamptz created_at
+  }
+
+  projects ||--o{ activity_feed : "project_id"
+  profiles ||--o{ activity_feed : "actor_id (opt)"
+
   %% ── AI RATE LIMITING & AUDIT ────────────────────────────────────────────────
 
   hearts {
@@ -217,6 +253,8 @@ erDiagram
 | `notifications` | In-app alert center | Inserted via service role only; deduplicated within 24h per type+user+payload |
 | `hearts` | AI query daily rate limit | Auto-created on profile insert; reset nightly by cron |
 | `ai_audit_log` | Immutable query history | Append-only; no `UPDATE`/`DELETE` policies |
+| `task_comments` | Threaded discussion on tasks | Author can delete own comment; all project members can read/post |
+| `activity_feed` | Append-only project event log | Written via service role; powers the Activity sidebar on project pages |
 
 ---
 
@@ -289,10 +327,11 @@ Open [http://localhost:3000](http://localhost:3000).
 Run migrations in order against your Supabase project:
 
 ```
-supabase/migrations/20260514000000_phase1_schema.sql   — profiles, projects, members, invites
-supabase/migrations/20260526000000_phase2_5_schema.sql — availability, progress_logs, hearts, ai_audit_log
-supabase/migrations/20260624000000_phase6_tasks.sql    — milestones, tasks, subtasks
-supabase/migrations/20260624000001_notifications.sql   — notifications
+supabase/migrations/20260514000000_phase1_schema.sql     — profiles, projects, members, invites
+supabase/migrations/20260526000000_phase2_5_schema.sql   — availability, progress_logs, hearts, ai_audit_log
+supabase/migrations/20260624000000_phase6_tasks.sql      — milestones, tasks, subtasks
+supabase/migrations/20260624000001_notifications.sql     — notifications
+supabase/migrations/20260625000000_task_comments_activity.sql — task_comments, activity_feed
 ```
 
 ---
@@ -320,8 +359,12 @@ app/
     auth/                 — NextAuth + magic-link + demo routes
     projects/             — Project CRUD
     milestones/           — Milestone CRUD
-    tasks/                — Task CRUD (fires task_assigned notifications)
+    tasks/                — Task CRUD (fires task_assigned notifications + activity log)
     tasks/[id]/subtasks/  — Subtask CRUD
+    tasks/[id]/comments/  — Task comment CRUD (members post, authors delete)
+    projects/[id]/activity/ — Project activity feed (last 50 events)
+    search/               — Global search across projects, milestones, tasks
+    channels/messages/    — Teams channel message feed via Microsoft Graph
     invites/              — Invite creation + acceptance (fires invite_received notifications)
     members/              — Member role management + supervisor sharing
     progress-logs/        — Progress log CRUD
@@ -340,7 +383,10 @@ components/
   CalendarBriefing        — Today's meetings from Outlook
   FocusModePanel          — Focus mode toggle
   SharingSettings         — Supervisor sharing toggle
-  DashboardShell          — Nav shell with hearts + notification bell + user menu
+  SearchBar               — Global header search with debounced results dropdown
+  ActivityFeed            — Per-project event timeline (client component)
+  ChannelFeed             — Teams channel message reader (client component)
+  DashboardShell          — Nav shell with search + hearts + notification bell + user menu
 lib/
   auth.ts                 — NextAuth config with Azure AD + token refresh
   notifications.ts        — Server-side notification helper (service role, deduplicates)
