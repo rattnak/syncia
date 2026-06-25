@@ -43,7 +43,8 @@ function NavLink({ href, label, icon }: { href: string; label: string; icon: Rea
   return (
     <Link
       href={href}
-      className={`flex items-center gap-1.5 text-sm font-medium px-2.5 py-1.5 rounded-lg transition ${
+      aria-label={label}
+      className={`flex items-center gap-2 text-sm font-medium px-3 py-2 rounded-xl transition min-w-[44px] min-h-[44px] justify-center sm:justify-start ${
         active
           ? 'bg-blue-50 text-blue-700'
           : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
@@ -109,20 +110,38 @@ function UserMenu({ email, isDemo, onSignOut }: { email: string; isDemo?: boolea
 
 // ── Icons ─────────────────────────────────────────────────────────────────────
 const DashboardIcon = () => (
-  <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
   </svg>
 )
 const BriefingIcon = () => (
-  <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
   </svg>
 )
 const SupervisorIcon = () => (
-  <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
   </svg>
 )
+
+// ── Bottom nav link (mobile only) ─────────────────────────────────────────────
+function BottomNavLink({ href, label, icon }: { href: string; label: string; icon: React.ReactNode }) {
+  const pathname = usePathname()
+  const active = pathname === href || (href !== '/dashboard' && pathname.startsWith(href))
+  return (
+    <Link
+      href={href}
+      aria-label={label}
+      className={`flex flex-col items-center gap-1 px-4 py-2 rounded-xl min-w-[64px] transition ${
+        active ? 'text-blue-600' : 'text-gray-400 hover:text-gray-700'
+      }`}
+    >
+      {icon}
+      <span className="text-[10px] font-medium">{label}</span>
+    </Link>
+  )
+}
 
 // ── Shell ─────────────────────────────────────────────────────────────────────
 interface DashboardShellProps {
@@ -155,21 +174,22 @@ export default function DashboardShell({ email, children, isDemo }: DashboardShe
 
       {/* Top nav */}
       <header className="bg-white border-b border-gray-200 px-4 py-2.5 flex items-center justify-between sticky top-0 z-30 gap-2">
+        {/* Left: wordmark + desktop nav */}
         <div className="flex items-center gap-3 min-w-0">
-          {/* Wordmark */}
           <Link href="/dashboard" className="flex items-center gap-2 shrink-0">
-            <div className="h-7 w-7 rounded-lg bg-blue-600 flex items-center justify-center text-white text-xs font-bold tracking-tight">S</div>
+            <div className="h-8 w-8 rounded-lg bg-blue-600 flex items-center justify-center text-white text-sm font-bold tracking-tight">S</div>
             <span className="hidden sm:block text-sm font-semibold text-gray-900">Syncia</span>
           </Link>
 
-          {/* Nav — icon-only on mobile, label on sm+ */}
-          <nav className="flex items-center gap-0.5">
+          {/* Desktop-only nav */}
+          <nav className="hidden sm:flex items-center gap-0.5">
             <NavLink href="/dashboard" label="Projects" icon={<DashboardIcon />} />
             <NavLink href="/briefing"  label="Briefing"  icon={<BriefingIcon />} />
             <NavLink href="/supervisor" label="Supervisor" icon={<SupervisorIcon />} />
           </nav>
         </div>
 
+        {/* Right: search + hearts + bell + avatar */}
         <div className="flex items-center gap-2 shrink-0">
           <div className="hidden md:block">
             <SearchBar />
@@ -180,10 +200,17 @@ export default function DashboardShell({ email, children, isDemo }: DashboardShe
         </div>
       </header>
 
-      {/* Page content */}
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+      {/* Page content — add bottom padding on mobile so content clears the bottom nav */}
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 pb-24 sm:pb-8">
         {children}
       </main>
+
+      {/* Mobile bottom nav */}
+      <nav className="sm:hidden fixed bottom-0 inset-x-0 bg-white border-t border-gray-200 z-30 flex items-center justify-around px-2 py-1 safe-bottom">
+        <BottomNavLink href="/dashboard"   label="Projects"   icon={<DashboardIcon />} />
+        <BottomNavLink href="/briefing"    label="Briefing"   icon={<BriefingIcon />} />
+        <BottomNavLink href="/supervisor"  label="Supervisor" icon={<SupervisorIcon />} />
+      </nav>
     </div>
   )
 }
