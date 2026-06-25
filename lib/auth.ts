@@ -64,12 +64,14 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async signIn({ profile }) {
-      // Restrict sign-in to @fhsu.edu accounts only
-      const email =
-        (profile as { email?: string; preferred_username?: string })?.email ??
-        (profile as { preferred_username?: string })?.preferred_username ??
-        ''
-      return email.toLowerCase().endsWith('@fhsu.edu')
+      const p = profile as { email?: string; preferred_username?: string; upn?: string } | undefined
+      const email = (p?.email ?? p?.preferred_username ?? p?.upn ?? '').toLowerCase()
+      console.log('[auth] signIn profile email:', email)
+      if (!email.endsWith('@fhsu.edu')) {
+        console.log('[auth] signIn rejected — not an @fhsu.edu address')
+        return false
+      }
+      return true
     },
     async jwt({ token, account, profile }) {
       if (account) {

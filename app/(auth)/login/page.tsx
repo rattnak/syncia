@@ -1,16 +1,27 @@
 'use client'
 
 import { signIn } from 'next-auth/react'
-import { useState } from 'react'
+import { useSearchParams } from 'next/navigation'
+import { Suspense, useState } from 'react'
 
-export default function LoginPage() {
+function LoginForm() {
   const [loading, setLoading] = useState(false)
+  const searchParams = useSearchParams()
+  const error = searchParams.get('error')
+
+  const errorMessage: Record<string, string> = {
+    OAuthSignin:    'Could not start Microsoft sign-in. Check that the app is configured correctly.',
+    OAuthCallback:  'Microsoft returned an error during sign-in.',
+    OAuthCreateAccount: 'Could not create your account.',
+    Callback:       'Sign-in callback failed.',
+    AccessDenied:   'Access denied. Make sure you are signing in with an @fhsu.edu Microsoft account.',
+    Verification:   'Verification failed.',
+    Default:        'An unexpected error occurred during sign-in.',
+  }
 
   async function handleSSO() {
     setLoading(true)
-    // Clear any active demo session before redirecting to Microsoft
     await fetch('/api/auth/exit-demo').catch(() => {})
-    // Delete the cookie client-side too for instant effect
     document.cookie = 'syncia-demo=; path=/; max-age=0'
     await signIn('azure-ad', { callbackUrl: '/dashboard' })
   }
@@ -24,6 +35,16 @@ export default function LoginPage() {
             Project-scoped team coordination for FHSU staff
           </p>
         </div>
+
+        {error && (
+          <div className="w-full rounded-lg bg-red-50 border border-red-200 px-4 py-3">
+            <p className="text-sm text-red-700 font-medium">Sign-in failed</p>
+            <p className="text-xs text-red-600 mt-0.5">
+              {errorMessage[error] ?? errorMessage.Default}
+            </p>
+            <p className="text-xs text-red-400 mt-1">Error code: {error}</p>
+          </div>
+        )}
 
         <button
           onClick={handleSSO}
@@ -52,6 +73,14 @@ export default function LoginPage() {
         </p>
       </div>
     </main>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
   )
 }
 
