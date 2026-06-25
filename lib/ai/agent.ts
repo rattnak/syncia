@@ -3,9 +3,6 @@ import { createClient } from '@/lib/supabase/server'
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
-  defaultHeaders: {
-    'anthropic-beta': 'zero-retention-2025-01-01',
-  },
 })
 
 interface AgentQueryParams {

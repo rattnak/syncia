@@ -73,15 +73,21 @@ export async function POST(req: NextRequest) {
   }
 
   // Run AI — deduct heart only if the call succeeds
-  const answer = await runAgentQuery({
-    requesterId: user.id,
-    subjectUserId,
-    projectId,
-    query,
-    progressLogs: logs ?? [],
-    tasks,
-    milestones,
-  })
+  let answer: string
+  try {
+    answer = await runAgentQuery({
+      requesterId: user.id,
+      subjectUserId,
+      projectId,
+      query,
+      progressLogs: logs ?? [],
+      tasks,
+      milestones,
+    })
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : 'AI request failed'
+    return NextResponse.json({ error: msg }, { status: 502 })
+  }
 
   await supabase
     .from('hearts')
