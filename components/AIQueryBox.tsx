@@ -69,19 +69,7 @@ export default function AIQueryBox({ projectId, members }: AIQueryBoxProps) {
         ))}
       </div>
 
-      <form onSubmit={handleAsk} className="flex flex-col gap-3">
-        {members.length > 1 && (
-          <select
-            value={subjectUserId}
-            onChange={(e) => setSubjectUserId(e.target.value)}
-            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="">All members</option>
-            {members.map((m) => (
-              <option key={m.user_id} value={m.user_id}>{m.name}</option>
-            ))}
-          </select>
-        )}
+      <form onSubmit={handleAsk} className="flex flex-col gap-2">
         <div className="flex gap-2">
           <input
             type="text"
@@ -99,6 +87,21 @@ export default function AIQueryBox({ projectId, members }: AIQueryBoxProps) {
             {loading ? '…' : 'Ask'}
           </button>
         </div>
+        {members.length > 1 && (
+          <div className="flex items-center gap-2">
+            <label className="text-xs text-gray-400 shrink-0">Focus on</label>
+            <select
+              value={subjectUserId}
+              onChange={(e) => setSubjectUserId(e.target.value)}
+              className="flex-1 border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs text-gray-600 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">All members</option>
+              {members.map((m) => (
+                <option key={m.user_id} value={m.user_id}>{m.name}</option>
+              ))}
+            </select>
+          </div>
+        )}
         {error && <p className="text-xs text-red-500">{error}</p>}
       </form>
 
