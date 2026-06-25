@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Select from '@/components/ui/Select'
 
 interface MeetingSchedulerProps {
   projectId: string
@@ -95,16 +96,15 @@ export default function MeetingScheduler({ memberEmails, projectName }: MeetingS
         />
         <div className="flex items-center gap-2">
           <label className="text-xs text-gray-500 shrink-0">Duration:</label>
-          <select
+          <Select
             value={duration}
             onChange={(e) => setDuration(Number(e.target.value))}
-            className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none"
           >
             <option value={30}>30 min</option>
             <option value={60}>1 hour</option>
             <option value={90}>1.5 hours</option>
             <option value={120}>2 hours</option>
-          </select>
+          </Select>
           <button
             onClick={findTimes}
             disabled={loadingSuggestions}

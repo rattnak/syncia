@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Select from '@/components/ui/Select'
 
 interface Profile { id: string; full_name: string | null; email: string }
 
@@ -268,37 +269,37 @@ export default function MilestoneBoard({ projectId, initialMilestones, initialTa
       {/* Filter bar */}
       <div className="px-4 py-2.5 border-b border-gray-100 flex items-center gap-2 overflow-x-auto scrollbar-none">
         <span className="text-xs text-gray-400 mr-1">Filter:</span>
-        <select
+        <Select
           value={filterAssignee}
           onChange={(e) => setFilterAssignee(e.target.value)}
-          className="text-xs border border-gray-200 rounded-lg px-2 py-1 bg-white focus:outline-none"
+          className="text-xs py-1 pl-2 pr-7 border-gray-200 bg-white"
         >
           <option value="">All assignees</option>
           {members.map((m) => (
             <option key={m.user_id} value={m.user_id}>{m.name || m.email}</option>
           ))}
-        </select>
-        <select
+        </Select>
+        <Select
           value={filterPriority}
           onChange={(e) => setFilterPriority(e.target.value)}
-          className="text-xs border border-gray-200 rounded-lg px-2 py-1 bg-white focus:outline-none"
+          className="text-xs py-1 pl-2 pr-7 border-gray-200 bg-white"
         >
           <option value="">All priorities</option>
           <option value="high">High</option>
           <option value="medium">Medium</option>
           <option value="low">Low</option>
-        </select>
-        <select
+        </Select>
+        <Select
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
-          className="text-xs border border-gray-200 rounded-lg px-2 py-1 bg-white focus:outline-none"
+          className="text-xs py-1 pl-2 pr-7 border-gray-200 bg-white"
         >
           <option value="">All statuses</option>
           <option value="not_started">Not Started</option>
           <option value="in_progress">In Progress</option>
           <option value="done">Done</option>
           <option value="cancelled">Cancelled</option>
-        </select>
+        </Select>
         {activeFilters > 0 && (
           <button
             onClick={() => { setFilterAssignee(''); setFilterPriority(''); setFilterStatus('') }}
@@ -434,31 +435,29 @@ export default function MilestoneBoard({ projectId, initialMilestones, initialTa
                       className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                     <div className="flex items-center gap-2 flex-wrap">
-                      <select
+                      <Select
                         value={taskAssignee[msId] ?? ''}
                         onChange={(e) => setTaskAssignee((prev) => ({ ...prev, [msId]: e.target.value }))}
-                        className="border border-gray-300 rounded-lg px-2 py-1.5 text-sm bg-white focus:outline-none"
                       >
                         <option value="">Unassigned</option>
                         {members.map((m) => (
                           <option key={m.user_id} value={m.user_id}>{m.name || m.email}</option>
                         ))}
-                      </select>
+                      </Select>
                       <input
                         type="date"
                         value={taskDue[msId] ?? ''}
                         onChange={(e) => setTaskDue((prev) => ({ ...prev, [msId]: e.target.value }))}
                         className="border border-gray-300 rounded-lg px-2 py-1.5 text-sm bg-white focus:outline-none"
                       />
-                      <select
+                      <Select
                         value={taskPriority[msId] ?? 'medium'}
                         onChange={(e) => setTaskPriority((prev) => ({ ...prev, [msId]: e.target.value }))}
-                        className="border border-gray-300 rounded-lg px-2 py-1.5 text-sm bg-white focus:outline-none"
                       >
                         <option value="low">Low</option>
                         <option value="medium">Medium</option>
                         <option value="high">High</option>
-                      </select>
+                      </Select>
                       <button
                         type="submit"
                         disabled={taskAdding[msId]}
@@ -517,18 +516,21 @@ export default function MilestoneBoard({ projectId, initialMilestones, initialTa
                           )}
 
                           {/* Quick status toggle */}
-                          <select
-                            value={task.status}
-                            disabled={updatingTask === task.id}
-                            onClick={(e) => e.stopPropagation()}
-                            onChange={(e) => updateTaskStatus(task.id, e.target.value as Task['status'])}
-                            className="opacity-0 group-hover:opacity-100 border border-gray-200 rounded-lg px-1.5 py-0.5 text-xs bg-white focus:outline-none transition shrink-0"
-                          >
-                            <option value="not_started">Not Started</option>
-                            <option value="in_progress">In Progress</option>
-                            <option value="done">Done</option>
-                            <option value="cancelled">Cancelled</option>
-                          </select>
+                          <div className="opacity-0 group-hover:opacity-100 transition shrink-0 relative">
+                            <select
+                              value={task.status}
+                              disabled={updatingTask === task.id}
+                              onClick={(e) => e.stopPropagation()}
+                              onChange={(e) => updateTaskStatus(task.id, e.target.value as Task['status'])}
+                              className="appearance-none border border-gray-200 rounded-lg pl-2 pr-6 py-0.5 text-xs bg-white focus:outline-none"
+                            >
+                              <option value="not_started">Not Started</option>
+                              <option value="in_progress">In Progress</option>
+                              <option value="done">Done</option>
+                              <option value="cancelled">Cancelled</option>
+                            </select>
+                            <svg className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 h-3 w-3 text-gray-400" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+                          </div>
                         </div>
                       )
                     })}

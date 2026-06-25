@@ -90,16 +90,21 @@ export default function AIQueryBox({ projectId, members }: AIQueryBoxProps) {
         {members.length > 1 && (
           <div className="flex items-center gap-2">
             <label className="text-xs text-gray-400 shrink-0">Focus on</label>
-            <select
-              value={subjectUserId}
-              onChange={(e) => setSubjectUserId(e.target.value)}
-              className="flex-1 border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs text-gray-600 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">All members</option>
-              {members.map((m) => (
-                <option key={m.user_id} value={m.user_id}>{m.name}</option>
-              ))}
-            </select>
+            <div className="relative flex-1">
+              <select
+                value={subjectUserId}
+                onChange={(e) => setSubjectUserId(e.target.value)}
+                className="w-full appearance-none border border-gray-200 rounded-lg pl-2.5 pr-7 py-1.5 text-xs text-gray-600 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">All members</option>
+                {members.map((m) => (
+                  <option key={m.user_id} value={m.user_id}>{m.name}</option>
+                ))}
+              </select>
+              <svg className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-gray-400" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                <path d="M6 9l6 6 6-6"/>
+              </svg>
+            </div>
           </div>
         )}
         {error && <p className="text-xs text-red-500">{error}</p>}

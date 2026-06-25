@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Select from '@/components/ui/Select'
 
 interface SharingSettingsProps {
   projectId: string
@@ -73,16 +74,15 @@ export default function SharingSettings({ projectId, supervisors }: SharingSetti
       {shareWithSupervisor && supervisors.length > 0 && (
         <div className="mt-3">
           <label className="text-xs text-gray-500 block mb-1">Select supervisor</label>
-          <select
+          <Select
             value={supervisorId}
             onChange={(e) => { setSupervisorId(e.target.value); setSaved(false) }}
-            className="border border-gray-300 rounded-lg px-3 py-2 text-sm w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="">— choose —</option>
             {supervisors.map((s) => (
               <option key={s.id} value={s.id}>{s.name || s.email}</option>
             ))}
-          </select>
+          </Select>
         </div>
       )}
 

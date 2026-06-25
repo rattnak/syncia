@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import Select from '@/components/ui/Select'
 
 interface Profile { id: string; full_name: string | null; email: string }
 
@@ -235,28 +236,28 @@ export default function TaskDetailSlider({ task, initialSubtasks, members, onClo
           <div className="flex gap-3">
             <div className="flex-1">
               <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Status</label>
-              <select
+              <Select
                 value={status}
                 onChange={(e) => setStatus(e.target.value as Task['status'])}
-                className="mt-1.5 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none"
+                className="mt-1.5"
               >
                 <option value="not_started">Not Started</option>
                 <option value="in_progress">In Progress</option>
                 <option value="done">Done</option>
                 <option value="cancelled">Cancelled</option>
-              </select>
+              </Select>
             </div>
             <div className="flex-1">
               <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Priority</label>
-              <select
+              <Select
                 value={priority}
                 onChange={(e) => setPriority(e.target.value as Task['priority'])}
-                className="mt-1.5 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none"
+                className="mt-1.5"
               >
                 <option value="low">Low</option>
                 <option value="medium">Medium</option>
                 <option value="high">High</option>
-              </select>
+              </Select>
             </div>
           </div>
 
@@ -264,16 +265,16 @@ export default function TaskDetailSlider({ task, initialSubtasks, members, onClo
           <div className="flex gap-3">
             <div className="flex-1">
               <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Assignee</label>
-              <select
+              <Select
                 value={assigneeId}
                 onChange={(e) => setAssigneeId(e.target.value)}
-                className="mt-1.5 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none"
+                className="mt-1.5"
               >
                 <option value="">Unassigned</option>
                 {members.map((m) => (
                   <option key={m.user_id} value={m.user_id}>{m.name || m.email}</option>
                 ))}
-              </select>
+              </Select>
             </div>
             <div className="flex-1">
               <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Due date</label>

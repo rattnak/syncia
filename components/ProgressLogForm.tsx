@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
+import Select from '@/components/ui/Select'
 
 interface ProgressLog {
   id: string
@@ -225,15 +226,14 @@ export default function ProgressLogForm({ projectId, currentUserId, initialLogs 
             className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none bg-white"
           />
           <div className="flex items-center justify-between gap-2">
-            <select
+            <Select
               value={status}
               onChange={(e) => setStatus(e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
             >
               <option value="not_started">Not Started</option>
               <option value="in_progress">In Progress</option>
               <option value="done">Done</option>
-            </select>
+            </Select>
             <button
               type="submit"
               disabled={adding}
@@ -285,15 +285,14 @@ export default function ProgressLogForm({ projectId, currentUserId, initialLogs 
                       className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm w-full focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none bg-white"
                     />
                     <div className="flex items-center gap-2">
-                      <select
+                      <Select
                         value={editStatus}
                         onChange={(e) => setEditStatus(e.target.value)}
-                        className="border border-gray-300 rounded-lg px-2 py-1.5 text-sm bg-white focus:outline-none"
                       >
                         <option value="not_started">Not Started</option>
                         <option value="in_progress">In Progress</option>
                         <option value="done">Done</option>
-                      </select>
+                      </Select>
                       <button
                         onClick={() => saveEdit(log.id)}
                         disabled={editSaving}

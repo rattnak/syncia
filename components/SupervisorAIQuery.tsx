@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Select from '@/components/ui/Select'
 
 interface SupervisorAIQueryProps {
   members: Array<{ user_id: string; name: string }>
@@ -49,16 +50,15 @@ export default function SupervisorAIQuery({ members }: SupervisorAIQueryProps) {
       </div>
 
       <form onSubmit={handleAsk} className="flex flex-col gap-3">
-        <select
+        <Select
           value={subjectUserId}
           onChange={(e) => setSubjectUserId(e.target.value)}
-          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <option value="">All members</option>
           {members.map((m) => (
             <option key={m.user_id} value={m.user_id}>{m.name}</option>
           ))}
-        </select>
+        </Select>
         <textarea
           value={query}
           onChange={(e) => setQuery(e.target.value)}
