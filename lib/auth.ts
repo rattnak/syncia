@@ -15,6 +15,7 @@ async function refreshAccessToken(token: Record<string, unknown>) {
         scope: [
           'openid', 'profile', 'email', 'offline_access',
           'Calendars.Read', 'Calendars.ReadWrite',
+          'ChannelMessage.Read.All',
         ].join(' '),
       }),
     })
@@ -48,6 +49,7 @@ export const authOptions: NextAuthOptions = {
             'offline_access',
             'Calendars.Read',
             'Calendars.ReadWrite',
+            'ChannelMessage.Read.All',
           ].join(' '),
         },
       },
